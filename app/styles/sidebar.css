@@ -125,7 +125,7 @@
 
 .no-playlists-text {
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 12px;
   font-style: italic;
 }
 
@@ -190,16 +190,27 @@
   }
 
   .mobile-menu-body .sidebar-nav {
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    padding: 11px 16px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.85px;
   }
 
   .mobile-menu-body .playlist-title {
-    margin-top: 16px;
+    margin-top: 12px;
+    font-size: 10px;
+    font-weight: 500;
   }
 
   .mobile-menu-body .queue-button {
-    margin-top: 24px;
+    margin-top: 18px;
+    font-size: 10px;
+  }
+
+  .mobile-menu-body .create-playlist {
+    font-size: 10px;
+    font-weight: 500;
   }
 
   .mobile-menu-body .no-playlists-text {

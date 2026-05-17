@@ -17,7 +17,9 @@
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.35px;
   font-family: var(--font-mono);
   transition: border-color 0.2s ease;
 }
@@ -101,6 +103,12 @@
   width: 100%;
   text-align: left;
   padding: 4px 0;
+}
+
+.sign-out-btn {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.75px;
 }
 
 .dropdown-link {

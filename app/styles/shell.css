@@ -145,12 +145,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 28px 20px 20px 16px;
+  padding: 22px 20px 14px 16px;
 }
 
 .mobile-menu-title {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 17px;
+  font-weight: 700;
   margin: 0;
   color: var(--color-text);
   font-family: var(--font-mono);
@@ -173,7 +173,7 @@
 
 .mobile-menu-body {
   flex: 1;
-  padding: 16px;
+  padding: 10px 16px 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

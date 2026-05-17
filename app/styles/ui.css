@@ -52,6 +52,21 @@
   gap: 12px;
 }
 
+.ui-title-row .share-button-small {
+  width: 22px;
+  height: 22px;
+  transform: translateY(-1px);
+}
+
+.ui-title-row .share-button-small svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-title-row .ui-compact-action--queue {
+  transform: translateY(-1px);
+}
+
 .ui-title-loading-indicator {
   color: var(--color-text-secondary);
   font-size: 12px;
