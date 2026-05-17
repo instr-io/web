@@ -2,6 +2,7 @@
   /* Backgrounds */
   --color-background: rgb(20, 20, 23);
   --color-surface: rgba(29, 29, 37, 0.92);
+  --color-surface-raised: rgba(24, 24, 30, 0.94);
   --color-subtle: rgba(255, 255, 255, 0.05);
   --color-active: rgba(217, 217, 235, 0.404);
   --color-selected: rgba(46, 46, 56, 0.92);
@@ -12,10 +13,13 @@
   --color-text-dim: #888;
   --color-text-faint: #555;
   --color-text-secondary: rgba(255, 255, 255, 0.5);
+  --color-text-ui-subtle: rgba(255, 255, 255, 0.62);
+  --color-text-ui-faint: rgba(255, 255, 255, 0.42);
 
   /* Borders */
   --color-border: rgba(255, 255, 255, 0.1);
   --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-border-ui-subtle: rgba(255, 255, 255, 0.16);
 
   /* Status */
   --color-error: rgba(255, 100, 100, 0.6);

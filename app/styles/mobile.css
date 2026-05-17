@@ -152,6 +152,10 @@
 }
 
 @media (max-width: 768px) and (pointer: coarse) {
+  .ui-title-row {
+    padding-left: 4px;
+  }
+
   .main-content {
     padding-bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px) + 28px) !important;
   }

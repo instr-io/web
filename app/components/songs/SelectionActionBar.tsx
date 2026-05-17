@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Song, replaceSong } from '@/app/lib/api';
 import { InlineActionInput } from '@/app/components/common/InlineActionInput';
+import { LoadingDots } from '@/app/components/common/LoadingDots';
 
 interface SelectionActionBarProps {
   selectedCount: number;
@@ -31,6 +32,12 @@ export function SelectionActionBar({
   const [replaceState, setReplaceState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [replaceError, setReplaceError] = useState('');
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const replaceLoadingIndicator = (
+    <LoadingDots
+      className="selection-loading-indicator"
+      ariaLabel="Replacing song"
+    />
+  );
   // Lock in the song ID when entering replace mode — don't read from the prop at submit
   // time since songs can auto-refresh and change selectedSong underneath the form.
   const replacingSongIdRef = useRef<string | null>(null);
@@ -130,7 +137,7 @@ export function SelectionActionBar({
         }}
         onSubmit={handleReplaceSubmit}
         onCancel={() => { exitReplaceMode(); onClear(); }}
-        submitLabel={replaceState === 'loading' ? '…' : '→'}
+        submitLabel={replaceState === 'loading' ? replaceLoadingIndicator : '→'}
         disabled={replaceState === 'loading'}
         submitDisabled={replaceState === 'loading'}
         autoFocus

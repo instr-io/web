@@ -76,7 +76,7 @@ export function AddSongsModal({
   const loadingIndicator = <LoadingDots className="compact-import-loading-indicator" ariaLabel="Adding songs" />;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay compact-import-overlay" onClick={onClose}>
       <div className="compact-import-modal" onClick={e => e.stopPropagation()}>
         <InlineActionInput
           variant="overlay"
