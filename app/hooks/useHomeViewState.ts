@@ -3,6 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+export interface PlaylistBackState {
+  view: string;
+  artistName: string | null;
+}
+
 export interface HomeViewState {
   currentView: string;
   setCurrentView: (view: string) => void;
@@ -25,6 +30,8 @@ export interface HomeViewState {
   setShowAddToPlaylistModal: (show: boolean) => void;
   preArtistView: string | null;
   setPreArtistView: (view: string | null) => void;
+  prePlaylistRoute: PlaylistBackState | null;
+  setPrePlaylistRoute: (route: PlaylistBackState | null) => void;
   librarySortBy: 'recent' | 'alpha';
   setLibrarySortBy: React.Dispatch<React.SetStateAction<'recent' | 'alpha'>>;
   librarySortDir: 'asc' | 'desc';
@@ -49,6 +56,7 @@ export function useHomeViewState(): HomeViewState {
   const [discoverResetKey, setDiscoverResetKey] = useState(0);
   const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(false);
   const [preArtistView, setPreArtistView] = useState<string | null>(null);
+  const [prePlaylistRoute, setPrePlaylistRoute] = useState<PlaylistBackState | null>(null);
   const [librarySortBy, setLibrarySortBy] = useState<'recent' | 'alpha'>('recent');
   const [librarySortDir, setLibrarySortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -148,6 +156,8 @@ export function useHomeViewState(): HomeViewState {
     setShowAddToPlaylistModal,
     preArtistView,
     setPreArtistView,
+    prePlaylistRoute,
+    setPrePlaylistRoute,
     librarySortBy,
     setLibrarySortBy,
     librarySortDir,

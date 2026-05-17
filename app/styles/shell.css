@@ -271,6 +271,6 @@
   .outer-container {
     height: 100dvh;
     overflow: hidden;
-    padding-bottom: calc(16px + var(--player-height) + 170px);
+    padding-bottom: calc(16px + var(--player-height) + 32px + env(safe-area-inset-bottom, 0px));
   }
 }

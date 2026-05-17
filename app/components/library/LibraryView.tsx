@@ -57,6 +57,7 @@ interface LibraryViewProps {
   isCurrentPlaylistFromAnotherUser: boolean;
   selectedSong?: Song;
   multiSelect: LibrarySelectionController;
+  onBack?: () => void;
   onRenamePlaylist: (newName: string) => Promise<void>;
   onEditingChange: (editing: boolean) => void;
   onShareCurrentPlaylist: () => Promise<void>;
@@ -111,6 +112,7 @@ export function LibraryView({
   isCurrentPlaylistFromAnotherUser,
   selectedSong,
   multiSelect,
+  onBack,
   onRenamePlaylist,
   onEditingChange,
   onShareCurrentPlaylist,
@@ -136,9 +138,21 @@ export function LibraryView({
   const shouldShowPlaylistTitle = currentView !== 'user-songs' && (Boolean(currentPlaylistName) || isViewLoading);
   const showTitleActions = !isEditingTitle && Boolean(userId) && currentView !== 'user-songs' && Boolean(currentPlaylistName);
   const showTitleLoading = currentView !== 'user-songs' && isViewLoading;
+  const showPlaylistBack = currentView !== 'user-songs' && Boolean(onBack);
 
   return (
     <>
+      {showPlaylistBack && (
+        <div
+          className="song-row discover-back-row playlist-back-row"
+          onClick={onBack}
+        >
+          <span className="song-title ui-compact-action--label">
+            &larr; BACK
+          </span>
+        </div>
+      )}
+
       {shouldShowPlaylistTitle ? (
         <div className="ui-title-row">
           {userId && currentView !== 'user-songs' && !isSharedPlaylist && Boolean(currentPlaylistName) ? (

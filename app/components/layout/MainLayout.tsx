@@ -131,7 +131,7 @@ function PlaylistSidebarPanel({
         ALL ARTISTS
       </button>
 
-      <h2 className="playlist-title">PLAYLISTS</h2>
+      <h2 className="playlist-title">SAVED</h2>
       <button className="create-playlist" onClick={onCreatePlaylist}>
         + CREATE PLAYLIST
       </button>

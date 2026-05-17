@@ -268,6 +268,10 @@
   margin-bottom: 4px;
 }
 
+.playlist-back-row {
+  margin-bottom: 0;
+}
+
 .discover-artist-header {
   font-size: 14px;
   font-weight: bold;

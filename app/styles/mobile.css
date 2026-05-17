@@ -158,11 +158,7 @@
   }
 
   .main-content {
-    padding-bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px) + 28px) !important;
-  }
-
-  .main-content-wrapper {
-    max-height: calc(90vh - 250px);
+    padding-bottom: 0 !important;
   }
 
   .player {
@@ -179,12 +175,13 @@
 
   .action-area {
     flex-shrink: 0 !important;
-    padding: 12px 0 !important;
+    padding: 12px 0 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     min-width: 0 !important;
-    padding-bottom: 32px !important;
+    margin-top: 12px !important;
+    padding-bottom: 0 !important;
   }
 }
 

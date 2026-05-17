@@ -192,7 +192,7 @@
   .mobile-menu-body .sidebar-nav {
     padding: 11px 16px;
     margin-bottom: 8px;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
     letter-spacing: 0.85px;
   }
@@ -200,6 +200,11 @@
   .mobile-menu-body .playlist-title {
     margin-top: 12px;
     font-size: 10px;
+    font-weight: 500;
+  }
+
+  .mobile-menu-body .playlist-link {
+    font-size: 11px;
     font-weight: 500;
   }
 
@@ -211,6 +216,7 @@
   .mobile-menu-body .create-playlist {
     font-size: 10px;
     font-weight: 500;
+    margin-bottom: 10px;
   }
 
   .mobile-menu-body .no-playlists-text {

@@ -3,12 +3,15 @@
 import { Dispatch, SetStateAction, useCallback } from 'react';
 import { UserPlaylist } from '../contexts/PlaylistContext';
 import { Song } from '../lib/api';
+import type { PlaylistBackState } from './useHomeViewState';
 
 interface UseHomeNavigationOptions {
   currentView: string;
+  currentArtistName: string | null;
   playbackSourceView: string;
   playbackSourceArtist: string | null;
   preArtistView: string | null;
+  prePlaylistRoute: PlaylistBackState | null;
   userPlaylists: UserPlaylist[];
   userSongs: Song[];
   hasActiveRouteParams: boolean;
@@ -21,15 +24,18 @@ interface UseHomeNavigationOptions {
   setCurrentArtistName: (name: string | null) => void;
   setDiscoverResetKey: Dispatch<SetStateAction<number>>;
   setPreArtistView: (view: string | null) => void;
+  setPrePlaylistRoute: (route: PlaylistBackState | null) => void;
   setIsUrlBasedImport: (value: boolean) => void;
   setSearchQuery: (query: string) => void;
 }
 
 export function useHomeNavigation({
   currentView,
+  currentArtistName,
   playbackSourceView,
   playbackSourceArtist,
   preArtistView,
+  prePlaylistRoute,
   userPlaylists,
   userSongs,
   hasActiveRouteParams,
@@ -42,17 +48,20 @@ export function useHomeNavigation({
   setCurrentArtistName,
   setDiscoverResetKey,
   setPreArtistView,
+  setPrePlaylistRoute,
   setIsUrlBasedImport,
   setSearchQuery,
 }: UseHomeNavigationOptions) {
-  const handlePlaylistSelect = useCallback((playlistId: string, originalUserId?: string) => {
+  const handlePlaylistSelect = useCallback((playlistId: string, originalUserId?: string, options?: { trackPrevious?: boolean }) => {
     const newView = playlistId === 'all-songs' ? 'user-songs' : playlistId;
+    const trackPrevious = options?.trackPrevious ?? true;
 
     if (newView === 'discover') {
       setIsViewLoading(false);
       setCurrentView('discover');
       setCurrentPlaylistName('');
       setCurrentArtistName(null);
+      setPrePlaylistRoute(null);
       setDiscoverResetKey((previousKey) => previousKey + 1);
       replaceUrl('/');
       return;
@@ -62,6 +71,7 @@ export function useHomeNavigation({
       setIsViewLoading(false);
       setCurrentView('stats');
       setCurrentPlaylistName('');
+      setPrePlaylistRoute(null);
       replaceUrl('/');
       return;
     }
@@ -69,6 +79,7 @@ export function useHomeNavigation({
     if (newView === 'model') {
       setIsViewLoading(false);
       setCurrentView('model');
+      setPrePlaylistRoute(null);
       replaceUrl('/?view=model');
       return;
     }
@@ -77,6 +88,13 @@ export function useHomeNavigation({
 
     setIsUrlBasedImport(false);
     setSearchQuery('');
+
+    if (trackPrevious && newView !== 'user-songs') {
+      setPrePlaylistRoute({
+        view: currentView,
+        artistName: currentArtistName,
+      });
+    }
 
     if (hasActiveRouteParams) {
       replaceUrl('/');
@@ -107,6 +125,7 @@ export function useHomeNavigation({
       setIsViewLoading(false);
       setCurrentPlaylistName('');
       setCurrentArtistName(null);
+      setPrePlaylistRoute(null);
       setCurrentViewSongs(userSongs);
       replaceUrl('/');
     }
@@ -120,10 +139,12 @@ export function useHomeNavigation({
     setCurrentView(newView);
   }, [
     currentView,
+    currentArtistName,
     hasActiveRouteParams,
     replaceUrl,
     setCurrentArtistName,
     setIsViewLoading,
+    setPrePlaylistRoute,
     setCurrentPlaylistName,
     setCurrentView,
     setCurrentViewSongs,
@@ -148,10 +169,59 @@ export function useHomeNavigation({
 
   const handleArtistBack = useCallback(() => {
     if (preArtistView) {
-      handlePlaylistSelect(preArtistView === 'user-songs' ? 'all-songs' : preArtistView);
+      handlePlaylistSelect(preArtistView === 'user-songs' ? 'all-songs' : preArtistView, undefined, { trackPrevious: false });
       setPreArtistView(null);
     }
   }, [handlePlaylistSelect, preArtistView, setPreArtistView]);
+
+  const handlePlaylistBack = useCallback(() => {
+    if (!prePlaylistRoute) return;
+
+    const { view, artistName } = prePlaylistRoute;
+    setPrePlaylistRoute(null);
+
+    if (view === 'discover') {
+      setIsViewLoading(false);
+      setCurrentView('discover');
+      setCurrentPlaylistName('');
+      setCurrentArtistName(artistName);
+      replaceUrl(artistName ? `?artist=${encodeURIComponent(artistName)}` : '/');
+      if (artistName) {
+        setDiscoverResetKey((previousKey) => previousKey + 1);
+      }
+      return;
+    }
+
+    if (view === 'stats') {
+      setIsViewLoading(false);
+      setCurrentView('stats');
+      setCurrentPlaylistName('');
+      setCurrentArtistName(null);
+      replaceUrl('/');
+      return;
+    }
+
+    if (view === 'model') {
+      setIsViewLoading(false);
+      setCurrentView('model');
+      setCurrentPlaylistName('');
+      setCurrentArtistName(null);
+      replaceUrl('/?view=model');
+      return;
+    }
+
+    handlePlaylistSelect(view === 'user-songs' ? 'all-songs' : view, undefined, { trackPrevious: false });
+  }, [
+    handlePlaylistSelect,
+    prePlaylistRoute,
+    replaceUrl,
+    setCurrentArtistName,
+    setCurrentPlaylistName,
+    setCurrentView,
+    setDiscoverResetKey,
+    setIsViewLoading,
+    setPrePlaylistRoute,
+  ]);
 
   const handleHomeClick = useCallback(() => {
     handlePlaylistSelect('all-songs');
@@ -186,6 +256,7 @@ export function useHomeNavigation({
     handlePlaylistSelect,
     handleArtistClick,
     handleArtistBack,
+    handlePlaylistBack,
     handleHomeClick,
     handleNowPlayingClick,
   };

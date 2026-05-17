@@ -74,6 +74,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
     discoverResetKey, setDiscoverResetKey,
     showAddToPlaylistModal, setShowAddToPlaylistModal,
     preArtistView, setPreArtistView,
+    prePlaylistRoute, setPrePlaylistRoute,
     librarySortBy, setLibrarySortBy,
     librarySortDir, setLibrarySortDir,
     isSharedPlaylist,
@@ -231,13 +232,16 @@ function HomeContentInner(props: HomeContentInnerProps) {
     handlePlaylistSelect,
     handleArtistClick,
     handleArtistBack,
+    handlePlaylistBack,
     handleHomeClick,
     handleNowPlayingClick,
   } = useHomeNavigation({
     currentView,
+    currentArtistName,
     playbackSourceView,
     playbackSourceArtist,
     preArtistView,
+    prePlaylistRoute,
     userPlaylists,
     userSongs,
     hasActiveRouteParams,
@@ -250,6 +254,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
     setCurrentArtistName,
     setDiscoverResetKey,
     setPreArtistView,
+    setPrePlaylistRoute,
     setIsUrlBasedImport,
     setSearchQuery,
   });
@@ -651,6 +656,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             isCurrentPlaylistFromAnotherUser={Boolean(isCurrentPlaylistFromAnotherUser())}
             selectedSong={multiSelect.selectedCount === 1 ? songs.currentViewSongs.find((song) => song.song_id === multiSelect.selectedSongIds()[0]) : undefined}
             multiSelect={multiSelect}
+            onBack={prePlaylistRoute ? handlePlaylistBack : undefined}
             onRenamePlaylist={handleRenamePlaylist}
             onEditingChange={handleEditingChange}
             onShareCurrentPlaylist={handleShareCurrentPlaylist}
