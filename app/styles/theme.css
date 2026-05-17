@@ -4,6 +4,8 @@
   --color-surface: rgba(29, 29, 37, 0.92);
   --color-surface-raised: rgba(24, 24, 30, 0.94);
   --color-subtle: rgba(255, 255, 255, 0.05);
+  --color-button-surface: rgba(255, 255, 255, 0.055);
+  --color-button-surface-strong: rgba(255, 255, 255, 0.08);
   --color-active: rgba(217, 217, 235, 0.404);
   --color-selected: rgba(46, 46, 56, 0.92);
 

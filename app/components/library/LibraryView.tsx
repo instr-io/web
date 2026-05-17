@@ -13,6 +13,16 @@ import { AddToPlaylistModal } from '@/app/components/songs/AddToPlaylistModal';
 import { SearchField } from '@/app/components/common/SearchField';
 import { LoadingDots } from '@/app/components/common/LoadingDots';
 
+function MoreToggleIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
+    </svg>
+  );
+}
+
 interface LibrarySelectionController {
   selectedCount: number;
   selectedSongIds: () => string[];
@@ -23,6 +33,9 @@ interface LibrarySelectionController {
   handleDragMove: (index: number) => void;
   handleDragEnd: () => boolean;
   selectSingle: (songId: string) => void;
+  mobileSelectionMode: boolean;
+  enterMobileSelectionMode: (songId?: string) => void;
+  exitMobileSelectionMode: () => void;
 }
 
 interface LibraryViewProps {
@@ -138,6 +151,7 @@ export function LibraryView({
   const shouldShowPlaylistTitle = currentView !== 'user-songs' && (Boolean(currentPlaylistName) || isViewLoading);
   const showTitleActions = !isEditingTitle && Boolean(userId) && currentView !== 'user-songs' && Boolean(currentPlaylistName);
   const showTitleLoading = currentView !== 'user-songs' && isViewLoading;
+  const isPlaylistView = currentView !== 'user-songs';
   const showPlaylistBack = currentView !== 'user-songs' && Boolean(onBack);
 
   return (
@@ -198,7 +212,31 @@ export function LibraryView({
                   &rarr;
                 </button>
               )}
+              <button
+                className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
+                onClick={() => {
+                  if (multiSelect.mobileSelectionMode) multiSelect.exitMobileSelectionMode();
+                  else multiSelect.enterMobileSelectionMode();
+                }}
+                aria-label={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+                title={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+              >
+                <MoreToggleIcon />
+              </button>
             </>
+          )}
+          {isPlaylistView && !showTitleActions && (
+            <button
+              className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
+              onClick={() => {
+                if (multiSelect.mobileSelectionMode) multiSelect.exitMobileSelectionMode();
+                else multiSelect.enterMobileSelectionMode();
+              }}
+              aria-label={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+              title={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+            >
+              <MoreToggleIcon />
+            </button>
           )}
           {showTitleLoading && (
             <LoadingDots
@@ -254,7 +292,10 @@ export function LibraryView({
               }
             }}
           >
-            RECENT {librarySortBy === 'recent' ? (librarySortDir === 'asc' ? '↓' : '↑') : ''}
+            <span className="library-sort-option-label">RECENT</span>
+            <span className={`library-sort-option-indicator ${librarySortBy === 'recent' ? 'visible' : ''}`}>
+              {librarySortDir === 'asc' ? '↓' : '↑'}
+            </span>
           </span>
           <span
             className={`library-sort-option ${librarySortBy === 'alpha' ? 'active' : ''}`}
@@ -266,8 +307,22 @@ export function LibraryView({
               }
             }}
           >
-            A-Z {librarySortBy === 'alpha' ? (librarySortDir === 'asc' ? '↑' : '↓') : ''}
+            <span className="library-sort-option-label">A-Z</span>
+            <span className={`library-sort-option-indicator ${librarySortBy === 'alpha' ? 'visible' : ''}`}>
+              {librarySortDir === 'asc' ? '↑' : '↓'}
+            </span>
           </span>
+          <button
+            className="ui-compact-action ui-compact-action--more mobile-selection-toggle library-sort-more"
+            onClick={() => {
+              if (multiSelect.mobileSelectionMode) multiSelect.exitMobileSelectionMode();
+              else multiSelect.enterMobileSelectionMode();
+            }}
+            aria-label={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+            title={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+          >
+            <MoreToggleIcon />
+          </button>
         </div>
       )}
 
@@ -291,6 +346,8 @@ export function LibraryView({
                 onDragEnd={multiSelect.handleDragEnd}
                 hasSelection={multiSelect.selectedCount > 0}
                 onRightClickSelect={multiSelect.selectSingle}
+                showSelectionTargets={multiSelect.mobileSelectionMode}
+                onLongPressSelect={multiSelect.enterMobileSelectionMode}
               />
             ) : (
               <div className="empty-state">
@@ -367,11 +424,13 @@ export function LibraryView({
       <SelectionActionBar
         selectedCount={multiSelect.selectedCount}
         selectedSong={selectedSong}
+        mobileSelectionMode={multiSelect.mobileSelectionMode}
         onAddToPlaylist={() => setShowAddToPlaylistModal(true)}
         onAddToQueue={onMultiSelectQueue}
         onSave={onMultiSelectSave}
         onDelete={onMultiSelectDelete}
         onClear={multiSelect.clearSelection}
+        onExitMobileSelectionMode={multiSelect.exitMobileSelectionMode}
         onSongReplaced={onSongReplaced}
       />
 

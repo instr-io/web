@@ -23,6 +23,8 @@ interface VirtualizedSongRowData {
   onDragStart?: (index: number) => void;
   onDragMove?: (index: number) => void;
   onRightClickSelect?: (songId: string) => void;
+  showSelectionTargets?: boolean;
+  onLongPressSelect?: (songId: string) => void;
 }
 
 const syntheticEvent = { stopPropagation: () => {}, preventDefault: () => {} } as React.MouseEvent;
@@ -43,6 +45,8 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
     onDragStart,
     onDragMove,
     onRightClickSelect,
+    showSelectionTargets,
+    onLongPressSelect,
   } = data;
 
   const song = songs[index];
@@ -74,7 +78,7 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
   const touchHandlers = useTouchActions({
     onSwipeRight: () => onAddToQueue(syntheticEvent, song),
     onSwipeLeft: canDelete ? () => onDeleteSong!(syntheticEvent, song) : undefined,
-    onLongPress: onSaveToLibrary ? () => onSaveToLibrary(syntheticEvent, song) : undefined,
+    onLongPress: onLongPressSelect ? () => onLongPressSelect(song.song_id) : undefined,
   });
 
   return (
@@ -110,33 +114,37 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
             return decodeHtmlEntities(title || song.title || `https://youtube.com/watch?v=${song.song_id}`);
           })()}
         </span>
-        <div className="song-actions">
-          {onSaveToLibrary && (
+        {showSelectionTargets ? (
+          <div className={`song-select-indicator ${selected ? 'selected' : ''}`} aria-hidden="true" />
+        ) : (
+          <div className="song-actions">
+            {onSaveToLibrary && (
+              <button
+                className="song-queue-btn"
+                onClick={(e) => onSaveToLibrary(e, song)}
+                title="Save to library"
+              >
+                +
+              </button>
+            )}
             <button
-              className="song-queue-btn"
-              onClick={(e) => onSaveToLibrary(e, song)}
-              title="Save to library"
+              className="song-queue-btn arrow-btn"
+              onClick={(e) => onAddToQueue(e, song)}
+              title="Add to queue"
             >
-              +
+              &rarr;
             </button>
-          )}
-          <button
-            className="song-queue-btn arrow-btn"
-            onClick={(e) => onAddToQueue(e, song)}
-            title="Add to queue"
-          >
-            &rarr;
-          </button>
-          {showDeleteButton && onDeleteSong && (
-            <button
-              className="song-delete-btn"
-              onClick={(e) => onDeleteSong(e, song)}
-              title={deleteButtonTitle}
-            >
-              &times;
-            </button>
-          )}
-        </div>
+            {showDeleteButton && onDeleteSong && (
+              <button
+                className="song-delete-btn"
+                onClick={(e) => onDeleteSong(e, song)}
+                title={deleteButtonTitle}
+              >
+                &times;
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -159,6 +167,8 @@ interface VirtualizedSongListProps {
   onDragEnd?: () => boolean;
   hasSelection?: boolean;
   onRightClickSelect?: (songId: string) => void;
+  showSelectionTargets?: boolean;
+  onLongPressSelect?: (songId: string) => void;
 }
 
 export function VirtualizedSongList({
@@ -178,6 +188,8 @@ export function VirtualizedSongList({
   onDragEnd,
   hasSelection,
   onRightClickSelect,
+  showSelectionTargets,
+  onLongPressSelect,
 }: VirtualizedSongListProps) {
   const listRef = useRef<ListImperativeAPI>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -240,6 +252,8 @@ export function VirtualizedSongList({
           onDragStart,
           onDragMove,
           onRightClickSelect,
+          showSelectionTargets,
+          onLongPressSelect,
         }}
         style={{ height: listHeight }}
       />

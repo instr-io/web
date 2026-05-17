@@ -12,15 +12,45 @@ interface UseMultiSelectOptions {
 export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiSelectOptions) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+  const [mobileSelectionMode, setMobileSelectionMode] = useState(false);
   const dragStartIndex = useRef<number | null>(null);
   const isDragging = useRef(false);
   const hasDragMoved = useRef(false);
+  const isMobileViewportRef = useRef<boolean | null>(null);
 
   // Clear selection on view change
   useEffect(() => {
     setSelectedIds(new Set());
     setLastClickedIndex(null);
+    setMobileSelectionMode(false);
   }, [onViewChange]);
+
+  // Selection UI is mode-specific: desktop uses modifier/drag selection, while
+  // mobile uses an explicit toggle mode. Crossing the breakpoint should switch
+  // presentation modes without throwing away the actual selection.
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileViewport = window.innerWidth <= 768;
+
+      if (isMobileViewportRef.current === null) {
+        isMobileViewportRef.current = isMobileViewport;
+        return;
+      }
+
+      if (isMobileViewportRef.current !== isMobileViewport) {
+        if (isMobileViewport) {
+          setMobileSelectionMode(prev => prev || selectedIds.size > 0);
+        } else {
+          setMobileSelectionMode(false);
+        }
+        isMobileViewportRef.current = isMobileViewport;
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [selectedIds]);
 
   // Escape key clears selection
   useEffect(() => {
@@ -36,8 +66,24 @@ export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiS
 
   // Returns true if the click was handled as a selection action
   const handleClick = useCallback((index: number, song: Song, event: React.MouseEvent): boolean => {
-    // Desktop only guard
-    if (window.innerWidth <= 768) return false;
+    if (window.innerWidth <= 768) {
+      if (!mobileSelectionMode) return false;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(song.song_id)) {
+          next.delete(song.song_id);
+        } else {
+          next.add(song.song_id);
+        }
+        return next;
+      });
+      setLastClickedIndex(index);
+      return true;
+    }
 
     const isCmd = event.metaKey || event.ctrlKey;
     const isShift = event.shiftKey;
@@ -82,7 +128,7 @@ export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiS
     }
 
     return true;
-  }, [currentSongId, lastClickedIndex, songs]);
+  }, [currentSongId, lastClickedIndex, mobileSelectionMode, songs]);
 
   const handleDragStart = useCallback((index: number) => {
     if (window.innerWidth <= 768) return;
@@ -120,6 +166,21 @@ export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiS
     setLastClickedIndex(idx !== -1 ? idx : null);
   }, [songs]);
 
+  const enterMobileSelectionMode = useCallback((songId?: string) => {
+    setMobileSelectionMode(true);
+    if (!songId) return;
+
+    setSelectedIds(new Set([songId]));
+    const idx = songs.findIndex(s => s.song_id === songId);
+    setLastClickedIndex(idx !== -1 ? idx : null);
+  }, [songs]);
+
+  const exitMobileSelectionMode = useCallback(() => {
+    setMobileSelectionMode(false);
+    setSelectedIds(new Set());
+    setLastClickedIndex(null);
+  }, []);
+
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
     setLastClickedIndex(null);
@@ -141,6 +202,9 @@ export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiS
     handleDragMove,
     handleDragEnd,
     selectSingle,
+    mobileSelectionMode,
+    enterMobileSelectionMode,
+    exitMobileSelectionMode,
     clearSelection,
     isSelected,
     selectedSongIds,

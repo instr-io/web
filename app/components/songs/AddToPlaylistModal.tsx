@@ -76,18 +76,19 @@ export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNav
   return (
     <div className="modal-overlay add-to-playlist-overlay" onClick={onClose}>
       <div className="modal-content add-to-playlist-modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>ADD TO PLAYLIST</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
-        </div>
-
-        <div className="modal-body ui-modal-body--compact">
+        <div className="modal-body ui-modal-body--compact add-to-playlist-body">
           <div className="add-to-playlist-search">
             <SearchField
               inputRef={inputRef}
               value={searchQuery}
               onValueChange={setSearchQuery}
               disabled={loading}
+              action={{
+                label: '×',
+                title: 'Close',
+                className: 'add-to-playlist-close',
+                onClick: onClose,
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   setSearchQuery('');
@@ -133,11 +134,11 @@ export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNav
               disabled={loading}
             />
             <button
-              className="ui-panel-button ui-panel-button--primary ui-nowrap"
+              className="ui-panel-button ui-panel-button--primary ui-nowrap add-to-playlist-create-button"
               onClick={handleCreatePlaylist}
               disabled={!newPlaylistName.trim() || loading}
             >
-              CREATE
+              + NEW
             </button>
           </div>
         </div>

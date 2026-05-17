@@ -153,6 +153,25 @@
   margin-left: 4px;
 }
 
+.song-select-indicator {
+  width: 9px;
+  height: 9px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 0;
+  margin-left: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.song-select-indicator.selected {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
 .song-queue-btn,
 .song-delete-btn {
   background: none;
@@ -288,8 +307,8 @@
 }
 
 .add-songs-button {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background-color: transparent;
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-button-surface);
   color: var(--color-text-secondary);
   padding: 8px 12px;
   cursor: pointer;
@@ -344,6 +363,9 @@
 }
 
 .library-sort-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--color-text-secondary);
   font-size: 11px;
   letter-spacing: 1px;
@@ -353,8 +375,22 @@
   transition: color 0.15s;
 }
 
+.library-sort-option-indicator {
+  width: 1ch;
+  text-align: center;
+  visibility: hidden;
+}
+
+.library-sort-option-indicator.visible {
+  visibility: visible;
+}
+
 .library-sort-option.active {
   color: var(--color-text);
+}
+
+.library-sort-more {
+  margin-left: auto;
 }
 
 .song-row-outer {

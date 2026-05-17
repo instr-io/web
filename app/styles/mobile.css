@@ -106,6 +106,10 @@
     z-index: 1 !important;
   }
 
+  .action-add-songs {
+    display: none !important;
+  }
+
   .mobile-menu-overlay {
     opacity: 0;
     animation: fadeIn 0.2s ease-out forwards;
@@ -136,11 +140,43 @@
     box-sizing: border-box !important;
   }
 
+  .song-actions {
+    display: none !important;
+  }
+
   .song-title {
     max-width: calc(100vw - 60px) !important;
     overflow: hidden !important;
     text-overflow: clip !important;
     white-space: nowrap !important;
+  }
+
+  .mobile-selection-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ui-title-row .mobile-selection-toggle,
+  .ui-compact-action-row .mobile-selection-toggle {
+    margin-right: 8px;
+  }
+
+  .ui-title-row .mobile-selection-toggle {
+    margin-left: auto;
+  }
+
+  .library-sort-more {
+    margin-left: auto;
+    padding-right: 8px;
+  }
+
+  .discover-artist-header .ui-compact-action-row {
+    flex: 1;
+  }
+
+  .discover-artist-header .ui-compact-action-row .mobile-selection-toggle {
+    margin-left: auto;
   }
 
   .action-area {

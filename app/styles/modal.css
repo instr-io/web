@@ -292,20 +292,57 @@
 }
 
 .add-to-playlist-search {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .add-to-playlist-modal {
   max-width: 380px;
+  max-height: min(50vh, 420px);
+  background-color: var(--color-surface-raised);
+  border: 0;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.add-to-playlist-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 16px 16px;
 }
 
 .add-to-playlist-search .search-field-shell {
   margin-top: 0;
+  border: 1px solid var(--color-border-strong);
+  background-color: rgba(255, 255, 255, 0.025);
+  border-radius: 0;
+}
+
+.add-to-playlist-search .search-field-input {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.add-to-playlist-close {
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0 12px 0 8px;
+}
+
+.add-to-playlist-search .search-field-action {
+  padding-right: 12px;
 }
 
 .add-to-playlist-list {
-  max-height: 280px;
-  margin-bottom: 16px;
+  flex: 1;
+  min-height: 220px;
+  max-height: none;
+  margin-bottom: 12px;
+  background-color: transparent;
+  border: 0;
+  border-radius: 6px;
 }
 
 .add-to-playlist-count {
@@ -321,7 +358,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .add-to-playlist-create-input {
@@ -337,6 +374,23 @@
   outline: none;
   border-radius: 0;
   -webkit-appearance: none;
+}
+
+.add-to-playlist-create-button {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--color-text-ui-subtle);
+  font-weight: 500;
+  padding: 6px 0 6px 8px;
+  letter-spacing: 0.08em;
+}
+
+@media (hover: hover) {
+  .add-to-playlist-create-button:hover:not(:disabled) {
+    background: none;
+    color: var(--color-text);
+  }
 }
 
 .add-to-playlist-create-input:disabled {
@@ -436,23 +490,24 @@
 }
 
 .ui-panel-button--secondary {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--color-button-surface);
   color: var(--color-text);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--color-border-strong);
 }
 
 @media (hover: hover) {
   .ui-panel-button--secondary:hover {
     color: var(--color-text);
+    background-color: var(--color-button-surface-strong);
     border-color: rgba(255, 255, 255, 0.3);
   }
   .ui-panel-button--primary:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.18);
   }
 }
 
 .ui-panel-button--primary {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-button-surface-strong);
   color: var(--color-text);
 }
 
@@ -542,6 +597,15 @@
 
   .compact-import-modal .ui-action-prompt__input::placeholder {
     color: transparent;
+  }
+
+  .add-to-playlist-modal {
+    background-color: var(--color-surface-raised);
+    max-height: none;
+  }
+
+  .add-to-playlist-list {
+    min-height: 0;
   }
 }
 

@@ -11,8 +11,8 @@
 }
 
 .sign-in-btn {
-  background: none;
-  border: 1px solid var(--color-text-secondary);
+  background: var(--color-button-surface);
+  border: 1px solid var(--color-border-strong);
   color: var(--color-text);
   padding: 8px 16px;
   border-radius: 6px;
@@ -269,6 +269,7 @@
 
 @media (hover: hover) {
   .sign-in-btn:hover {
+    background-color: var(--color-button-surface-strong);
     border-color: var(--color-text);
   }
 

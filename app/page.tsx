@@ -589,16 +589,21 @@ function HomeContentInner(props: HomeContentInnerProps) {
             onArtistSongsChanged={setDiscoverSongs}
             onQueueAll={handleQueueAll}
             showPopup={showPopup}
+            mobileSelectionMode={discoverMultiSelect.mobileSelectionMode}
+            onEnterMobileSelectionMode={discoverMultiSelect.enterMobileSelectionMode}
+            onExitMobileSelectionMode={discoverMultiSelect.exitMobileSelectionMode}
           />
           <SelectionActionBar
             selectedCount={discoverMultiSelect.selectedCount}
             selectedSong={discoverMultiSelect.selectedCount === 1 ? discoverSongs.find(s => s.song_id === discoverMultiSelect.selectedSongIds()[0]) : undefined}
+            mobileSelectionMode={discoverMultiSelect.mobileSelectionMode}
             onAddToPlaylist={() => setShowAddToPlaylistModal(true)}
             onAddToQueue={async () => {
               const ids = discoverMultiSelect.selectedSongIds();
               if (ids.length === 0) return;
               const count = ids.length;
               discoverMultiSelect.clearSelection();
+              discoverMultiSelect.exitMobileSelectionMode();
               try {
                 await addToOfficialQueue(ids);
                 await playback.loadQueue();
@@ -618,8 +623,10 @@ function HomeContentInner(props: HomeContentInnerProps) {
                 console.error('Failed to save songs:', err);
               }
               discoverMultiSelect.clearSelection();
+              discoverMultiSelect.exitMobileSelectionMode();
             }}
             onClear={discoverMultiSelect.clearSelection}
+            onExitMobileSelectionMode={discoverMultiSelect.exitMobileSelectionMode}
           />
           <AddToPlaylistSelectionModal
             isOpen={showAddToPlaylistModal && currentView === 'discover'}
@@ -627,6 +634,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             songIds={discoverMultiSelect.selectedSongIds()}
             onComplete={() => {
               discoverMultiSelect.clearSelection();
+              discoverMultiSelect.exitMobileSelectionMode();
               void refreshPlaylists();
             }}
             onNavigateToPlaylist={handlePlaylistCreated}
@@ -695,6 +703,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             }}
             onAddToPlaylistComplete={() => {
               multiSelect.clearSelection();
+              multiSelect.exitMobileSelectionMode();
               void refreshPlaylists();
             }}
             onNavigateToPlaylist={handlePlaylistCreated}
@@ -703,6 +712,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
               if (ids.length === 0) return;
               const count = ids.length;
               multiSelect.clearSelection();
+              multiSelect.exitMobileSelectionMode();
               try {
                 await addToOfficialQueue(ids);
                 await playback.loadQueue();
@@ -722,6 +732,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
                 console.error('Failed to save songs:', err);
               }
               multiSelect.clearSelection();
+              multiSelect.exitMobileSelectionMode();
             } : undefined}
             onMultiSelectDelete={
               !isCurrentPlaylistFromAnotherUser() && (!isSharedPlaylist || sharedPlaylistUserId === userId)
@@ -754,6 +765,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
                       console.error('Failed to delete songs:', err);
                       await songs.loadUserSongs();
                     }
+                    multiSelect.exitMobileSelectionMode();
                   }
                 : undefined
             }

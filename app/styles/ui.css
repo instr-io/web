@@ -154,9 +154,17 @@
   font-size: 14px;
 }
 
+.ui-compact-action--more {
+  padding: 2px 4px;
+}
+
 .ui-compact-action--icon {
   display: inline-flex;
   align-items: center;
+}
+
+.mobile-selection-toggle {
+  display: none;
 }
 
 .ui-compact-action-row {

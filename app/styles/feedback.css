@@ -52,6 +52,8 @@
 .save-button,
 .playlist-save-btn {
   color: var(--color-text);
+  background-color: var(--color-button-surface);
+  border: 1px solid var(--color-border-ui-subtle);
   border-radius: 6px;
 }
 
@@ -73,7 +75,11 @@
   gap: 4px;
   z-index: 200;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.035);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
 }
 
 .selection-count {
@@ -97,6 +103,11 @@
   text-transform: uppercase;
   white-space: nowrap;
   transition: all 0.15s;
+}
+
+.ui-inline-button:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .ui-inline-button--danger {
@@ -130,7 +141,7 @@
   font-size: 11px;
   letter-spacing: 0.5px;
   padding: 4px 6px;
-  width: 240px;
+  width: 280px;
   outline: none;
 }
 
@@ -174,6 +185,45 @@
   line-height: 1;
 }
 
+@media (max-width: 768px) {
+  .selection-action-bar--mobile {
+    top: auto;
+    bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px) + 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 56px);
+    max-width: 336px;
+    justify-content: center;
+    padding: 7px 10px;
+    gap: 1px;
+    background-color: rgba(30, 30, 37, 0.98);
+    border-color: rgba(255, 255, 255, 0.045);
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.26);
+  }
+
+  .selection-action-bar--mobile .ui-inline-button {
+    padding: 5px 7px;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .selection-action-bar--mobile .ui-inline-button--dismiss {
+    padding: 5px;
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .selection-action-bar--mobile .ui-inline-button--danger {
+    color: rgba(255, 120, 120, 0.88);
+  }
+
+  .selection-action-bar--mobile .ui-action-prompt__input {
+    width: 188px;
+  }
+}
+
 @keyframes fade-in-out {
   0% {
     opacity: 0;
@@ -203,7 +253,7 @@
 
   .save-button:hover,
   .playlist-save-btn:hover {
-    background-color: var(--color-active);
+    background-color: var(--color-button-surface-strong);
     border-color: rgba(255, 255, 255, 0.5);
   }
 

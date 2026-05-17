@@ -16,6 +16,16 @@ const TRAILING_DASH_RE = /\s*-\s*$/;
 const MULTI_SPACE_RE = /\s{2,}/g;
 const STALE_PROCESSING_WINDOW_SECONDS = 48 * 60 * 60;
 
+function MoreToggleIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
+    </svg>
+  );
+}
+
 function normalizeTitle(title: string): string {
   let t = title.replace(TITLE_SUFFIX_RE, '');
   t = t.replace(UNBRACKETED_SUFFIX_RE, '');
@@ -75,6 +85,9 @@ interface DiscoverViewProps {
   onQueueAll?: (songIds: string[]) => void;
   showPopup?: (msg: string, duration?: number) => void;
   onBack?: () => void;
+  mobileSelectionMode?: boolean;
+  onEnterMobileSelectionMode?: (songId?: string) => void;
+  onExitMobileSelectionMode?: () => void;
 }
 
 export function DiscoverView({
@@ -97,6 +110,9 @@ export function DiscoverView({
   onQueueAll,
   showPopup,
   onBack,
+  mobileSelectionMode = false,
+  onEnterMobileSelectionMode,
+  onExitMobileSelectionMode,
 }: DiscoverViewProps) {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<string | null>(initialArtist || null);
@@ -294,6 +310,18 @@ export function DiscoverView({
                 &rarr;
               </button>
             )}
+            <button
+              className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (mobileSelectionMode) onExitMobileSelectionMode?.();
+                else onEnterMobileSelectionMode?.();
+              }}
+              aria-label={mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+              title={mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+            >
+              <MoreToggleIcon />
+            </button>
           </div>
         </div>
         <div className="main-content-wrapper">
@@ -321,6 +349,8 @@ export function DiscoverView({
                   onDragEnd={onDragEnd}
                   hasSelection={hasSelection}
                   onRightClickSelect={onRightClickSelect}
+                  showSelectionTargets={mobileSelectionMode}
+                  onLongPressSelect={onEnterMobileSelectionMode}
                 />
               )}
             </div>

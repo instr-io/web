@@ -8,22 +8,26 @@ import { LoadingDots } from '@/app/components/common/LoadingDots';
 interface SelectionActionBarProps {
   selectedCount: number;
   selectedSong?: Song;
+  mobileSelectionMode?: boolean;
   onAddToPlaylist: () => void;
   onAddToQueue: () => void;
   onSave?: () => void;
   onDelete?: () => void;
   onClear: () => void;
+  onExitMobileSelectionMode?: () => void;
   onSongReplaced?: () => void;
 }
 
 export function SelectionActionBar({
   selectedCount,
   selectedSong,
+  mobileSelectionMode = false,
   onAddToPlaylist,
   onAddToQueue,
   onSave,
   onDelete,
   onClear,
+  onExitMobileSelectionMode,
   onSongReplaced,
 }: SelectionActionBarProps) {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -89,7 +93,9 @@ export function SelectionActionBar({
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [replaceMode]);
 
-  if (!isDesktop || selectedCount === 0) return null;
+  const isMobileVisible = !isDesktop && mobileSelectionMode;
+
+  if ((isDesktop && selectedCount === 0) || (!isDesktop && !isMobileVisible)) return null;
 
   function exitReplaceMode() {
     setReplaceMode(false);
@@ -122,13 +128,14 @@ export function SelectionActionBar({
   }
 
   const showReplaceButton = selectedCount === 1 && selectedSong?.status === 'COMPLETE';
+  const isActionDisabled = selectedCount === 0;
 
   if (replaceMode) {
     return (
       <InlineActionInput
         variant="selection"
-        className="selection-action-bar"
-        placeholder="YouTube link"
+        className={`selection-action-bar ${!isDesktop ? 'selection-action-bar--mobile' : ''}`}
+        placeholder=""
         value={replaceState === 'error' ? replaceError : replaceUrl}
         onValueChange={(value) => {
           setReplaceUrl(value);
@@ -136,7 +143,7 @@ export function SelectionActionBar({
           setReplaceError('');
         }}
         onSubmit={handleReplaceSubmit}
-        onCancel={() => { exitReplaceMode(); onClear(); }}
+        onCancel={() => { exitReplaceMode(); (onExitMobileSelectionMode || onClear)(); }}
         submitLabel={replaceState === 'loading' ? replaceLoadingIndicator : '→'}
         disabled={replaceState === 'loading'}
         submitDisabled={replaceState === 'loading'}
@@ -146,16 +153,16 @@ export function SelectionActionBar({
   }
 
   return (
-    <div className="selection-action-bar">
-      <span className="selection-count">{selectedCount} selected</span>
-      <button className="ui-inline-button" onClick={onAddToPlaylist}>
-        Add to playlist
+    <div className={`selection-action-bar ${!isDesktop ? 'selection-action-bar--mobile' : ''}`}>
+      {isDesktop && <span className="selection-count">{selectedCount} selected</span>}
+      <button className="ui-inline-button" onClick={onAddToPlaylist} disabled={isActionDisabled}>
+        {isDesktop ? 'Add to playlist' : '→ Playlist'}
       </button>
-      <button className="ui-inline-button" onClick={onAddToQueue}>
+      <button className="ui-inline-button" onClick={onAddToQueue} disabled={isActionDisabled}>
         Queue
       </button>
       {onSave && (
-        <button className="ui-inline-button" onClick={onSave}>
+        <button className="ui-inline-button" onClick={onSave} disabled={isActionDisabled}>
           Save
         </button>
       )}
@@ -165,11 +172,11 @@ export function SelectionActionBar({
         </button>
       )}
       {onDelete && (
-        <button className="ui-inline-button ui-inline-button--danger" onClick={onDelete}>
+        <button className="ui-inline-button ui-inline-button--danger" onClick={onDelete} disabled={isActionDisabled}>
           Delete
         </button>
       )}
-      <button className="ui-inline-button ui-inline-button--dismiss" onClick={onClear}>
+      <button className="ui-inline-button ui-inline-button--dismiss" onClick={onExitMobileSelectionMode || onClear}>
         &times;
       </button>
     </div>
