@@ -212,20 +212,22 @@ export function LibraryView({
                   &rarr;
                 </button>
               )}
-              <button
-                className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
-                onClick={() => {
-                  if (multiSelect.mobileSelectionMode) multiSelect.exitMobileSelectionMode();
-                  else multiSelect.enterMobileSelectionMode();
-                }}
-                aria-label={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
-                title={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
-              >
-                <MoreToggleIcon />
-              </button>
+              {!showTitleLoading && (
+                <button
+                  className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
+                  onClick={() => {
+                    if (multiSelect.mobileSelectionMode) multiSelect.exitMobileSelectionMode();
+                    else multiSelect.enterMobileSelectionMode();
+                  }}
+                  aria-label={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+                  title={multiSelect.mobileSelectionMode ? 'Exit selection mode' : 'Select songs'}
+                >
+                  <MoreToggleIcon />
+                </button>
+              )}
             </>
           )}
-          {isPlaylistView && !showTitleActions && (
+          {isPlaylistView && !showTitleActions && !showTitleLoading && (
             <button
               className="ui-compact-action ui-compact-action--more mobile-selection-toggle"
               onClick={() => {
@@ -237,6 +239,14 @@ export function LibraryView({
             >
               <MoreToggleIcon />
             </button>
+          )}
+          {showTitleLoading && (
+            <LoadingDots
+              active={isViewLoading}
+              delayMs={500}
+              className="ui-title-loading-indicator ui-title-loading-indicator--mobile mobile-selection-toggle"
+              ariaLabel="Loading playlist songs"
+            />
           )}
           {showTitleLoading && (
             <LoadingDots

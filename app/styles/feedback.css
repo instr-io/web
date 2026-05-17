@@ -75,11 +75,11 @@
   gap: 4px;
   z-index: 200;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.028);
+  border-top-color: transparent;
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .selection-count {
@@ -188,30 +188,31 @@
 @media (max-width: 768px) {
   .selection-action-bar--mobile {
     top: auto;
-    bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px) + 14px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
     left: 50%;
     transform: translateX(-50%);
     width: calc(100vw - 56px);
     max-width: 336px;
     justify-content: center;
-    padding: 7px 10px;
-    gap: 1px;
+    padding: 8px 12px;
+    gap: 4px;
     background-color: rgba(30, 30, 37, 0.98);
-    border-color: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.032);
+    border-top-color: transparent;
     box-shadow:
       0 10px 28px rgba(0, 0, 0, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.26);
+      inset 0 -1px 0 rgba(0, 0, 0, 0.22);
   }
 
   .selection-action-bar--mobile .ui-inline-button {
-    padding: 5px 7px;
-    font-size: 9px;
+    padding: 6px 8px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.78);
   }
 
   .selection-action-bar--mobile .ui-inline-button--dismiss {
-    padding: 5px;
+    padding: 6px 4px 6px 7px;
+    margin-left: 6px;
     color: rgba(255, 255, 255, 0.68);
   }
 

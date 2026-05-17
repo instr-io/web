@@ -160,10 +160,26 @@
   .ui-title-row .mobile-selection-toggle,
   .ui-compact-action-row .mobile-selection-toggle {
     margin-right: 8px;
+    width: 22px;
+    min-width: 22px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .ui-title-row .mobile-selection-toggle {
     margin-left: auto;
+  }
+
+  .ui-title-row .ui-title-loading-indicator {
+    display: none;
+  }
+
+  .ui-title-row .ui-title-loading-indicator--mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    min-width: 22px;
   }
 
   .library-sort-more {

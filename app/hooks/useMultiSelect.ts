@@ -52,6 +52,39 @@ export function useMultiSelect({ songs, currentSongId, onViewChange }: UseMultiS
     return () => window.removeEventListener('resize', handleResize);
   }, [selectedIds]);
 
+  useEffect(() => {
+    if (!mobileSelectionMode) return;
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (window.innerWidth > 768) return;
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      // Keep selection mode while selecting songs or using explicit actions.
+      if (
+        target.closest('.song-row') ||
+        target.closest('.selection-action-bar') ||
+        target.closest('.mobile-selection-toggle') ||
+        target.closest('button') ||
+        target.closest('a') ||
+        target.closest('input') ||
+        target.closest('textarea') ||
+        target.closest('select') ||
+        target.closest('[role="button"]')
+      ) {
+        return;
+      }
+
+      setMobileSelectionMode(false);
+      setSelectedIds(new Set());
+      setLastClickedIndex(null);
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, [mobileSelectionMode]);
+
   // Escape key clears selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
