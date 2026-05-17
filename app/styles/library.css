@@ -261,6 +261,11 @@
   text-align: right;
 }
 
+.discover-back-row,
+.playlist-back-row {
+  display: none;
+}
+
 .discover-back-row {
   color: var(--color-text-secondary);
   padding-top: 8px;
@@ -275,7 +280,7 @@
 .discover-artist-header {
   font-size: 14px;
   font-weight: bold;
-  padding: 4px 0 8px;
+  padding: 16px 0 8px;
   color: var(--color-text);
   display: flex;
   align-items: center;

@@ -22,6 +22,7 @@ interface PlayerProps {
   repeatOne?: boolean;
   setRepeatOne?: (value: boolean) => void;
   rebuildUnofficialQueue?: (shuffleOverride?: boolean) => Promise<void>;
+  compactMobileSpacing?: boolean;
 }
 
 function formatDuration(seconds?: number): string {
@@ -48,6 +49,7 @@ export function Player({
   repeatOne: repeatOneProp,
   setRepeatOne: setRepeatOneProp,
   rebuildUnofficialQueue,
+  compactMobileSpacing = false,
 }: PlayerProps) {
   // Use local state as fallback if props not provided (backwards compatibility)
   const [localIsShuffled, setLocalIsShuffled] = useState(false);
@@ -125,7 +127,7 @@ export function Player({
   const repeatMode = repeatOne ? 'one' : repeatAll ? 'all' : 'none';
 
   return (
-    <footer className="player">
+    <footer className={`player ${compactMobileSpacing ? 'player--compact-mobile' : ''}`}>
       <div className="player-controls">
         <IconButton
           icon="shuffle"

@@ -317,7 +317,7 @@ export function LibraryView({
           </div>
         </div>
 
-        <div className="action-area">
+        <div className={`action-area ${currentView !== 'user-songs' ? 'action-area--playlist' : ''}`}>
           {!isSharedPlaylist && (!isCurrentPlaylistFromAnotherUser || currentView === 'user-songs') && (
             <div className="action-add-songs">
               <button

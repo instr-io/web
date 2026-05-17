@@ -18,39 +18,14 @@ export function MobileMenu({ children }: MobileMenuProps) {
     setIsOpen(false);
   }, []);
 
-  // Auto-close menu when any menu item is clicked
-  const handleMenuItemClick = useCallback((originalHandler?: (...args: any[]) => void) => {
-    return (...args: any[]) => {
-      if (originalHandler) {
-        originalHandler(...args);
-      }
+  const handleBodyClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest('button, a, [role="button"], .ui-clickable')) {
       closeMenu();
-    };
+    }
   }, [closeMenu]);
-
-  // Recursively clone children and add auto-close to all clickable elements
-  const enhanceChildren = useCallback((children: React.ReactNode): React.ReactNode => {
-    return React.Children.map(children, (child) => {
-      if (React.isValidElement(child)) {
-        // If it's a button with onClick, wrap the onClick to auto-close
-        if (child.type === 'button' && child.props.onClick) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            onClick: handleMenuItemClick(child.props.onClick),
-            children: child.props.children ? enhanceChildren(child.props.children) : child.props.children
-          });
-        }
-        // If it has children, recursively enhance them
-        else if (child.props.children) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            children: enhanceChildren(child.props.children)
-          });
-        }
-      }
-      return child;
-    });
-  }, [handleMenuItemClick]);
-
-  const enhancedChildren = enhanceChildren(children);
 
   return (
     <>
@@ -92,8 +67,11 @@ export function MobileMenu({ children }: MobileMenuProps) {
                 ×
               </button>
             </div>
-            <div className="mobile-menu-body">
-              {enhancedChildren}
+            <div
+              className="mobile-menu-body"
+              onClick={handleBodyClick}
+            >
+              {children}
             </div>
           </div>
         </div>

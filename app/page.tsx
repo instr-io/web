@@ -503,6 +503,14 @@ function HomeContentInner(props: HomeContentInnerProps) {
     return currentPlaylist && currentPlaylist.original_user_id && currentPlaylist.original_user_id !== userId;
   };
 
+  const shouldCompactMobilePlayerSpacing =
+    currentView !== 'user-songs' &&
+    currentView !== 'discover' &&
+    currentView !== 'stats' &&
+    currentView !== 'model' &&
+    !isSharedPlaylist &&
+    !isCurrentPlaylistFromAnotherUser();
+
   // --- IMPORT LOADING SCREEN ---
   const showImportLoadingScreen = isUrlBasedImport && currentView === 'user-songs' && spotifyImportState.status !== 'error';
   if (showImportLoadingScreen) {
@@ -549,6 +557,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
         onArtistClick={handleArtistClick}
         onHomeClick={handleHomeClick}
         sidebarSearchQuery={songs.searchQuery}
+        compactMobilePlayerSpacing={shouldCompactMobilePlayerSpacing}
       >
         {currentView === 'stats' ? (
           <ListeningStatsView />

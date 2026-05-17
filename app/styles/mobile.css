@@ -98,8 +98,8 @@
 
   .add-songs-button {
     position: relative !important;
-    margin-top: 16px !important;
-    margin-bottom: 16px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
     width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -143,6 +143,17 @@
     white-space: nowrap !important;
   }
 
+  .action-area {
+    padding-top: 4px !important;
+    padding-bottom: 0 !important;
+    margin-top: 4px !important;
+  }
+
+  .action-area--playlist {
+    padding-top: 2px !important;
+    margin-top: 2px !important;
+  }
+
 }
 
 /* Actual mobile devices only */
@@ -153,8 +164,11 @@
 }
 
 @media (max-width: 768px) and (pointer: coarse) {
-  .ui-title-row {
-    padding-left: 4px;
+  .add-songs-button {
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
   }
 
   .main-content {
@@ -175,13 +189,10 @@
 
   .action-area {
     flex-shrink: 0 !important;
-    padding: 12px 0 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     min-width: 0 !important;
-    margin-top: 12px !important;
-    padding-bottom: 0 !important;
   }
 }
 

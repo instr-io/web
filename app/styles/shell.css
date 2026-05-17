@@ -269,6 +269,7 @@
 
 @media (max-width: 768px) and (pointer: coarse) {
   .outer-container {
+    box-sizing: border-box;
     height: 100dvh;
     overflow: hidden;
     padding-bottom: calc(16px + var(--player-height) + 32px + env(safe-area-inset-bottom, 0px));

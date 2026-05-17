@@ -224,3 +224,9 @@
     display: none;
   }
 }
+
+@media (max-width: 768px) and (pointer: coarse) {
+  .player.player--compact-mobile {
+    padding-top: 0;
+  }
+}

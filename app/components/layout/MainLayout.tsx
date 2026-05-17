@@ -39,6 +39,7 @@ interface MainLayoutProps {
   onArtistClick?: (artistName: string) => void;
   onHomeClick?: () => void;
   sidebarSearchQuery?: string;
+  compactMobilePlayerSpacing?: boolean;
 }
 
 interface PlaylistSidebarItemProps {
@@ -188,6 +189,7 @@ export function MainLayout({
   onArtistClick,
   onHomeClick,
   sidebarSearchQuery = '',
+  compactMobilePlayerSpacing = false,
 }: MainLayoutProps) {
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
@@ -375,6 +377,7 @@ export function MainLayout({
         repeatOne={repeatOne}
         setRepeatOne={setRepeatOne}
         rebuildUnofficialQueue={rebuildUnofficialQueue}
+        compactMobileSpacing={compactMobilePlayerSpacing}
       />
 
       <QueueModal
