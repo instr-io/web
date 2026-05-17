@@ -14,7 +14,7 @@ import './styles/mobile.css';
 
 export const metadata: Metadata = {
   title: 'instr.io',
-  description: 'Frontend for importing, converting, and streaming instrumental versions of songs.',
+  description: 'Create and stream instrumental versions of your favorite songs.',
 };
 
 export const viewport: Viewport = {
