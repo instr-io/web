@@ -15,14 +15,12 @@ interface AddToPlaylistModalProps {
 export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNavigateToPlaylist }: AddToPlaylistModalProps) {
   const { userPlaylists, addSongsToPlaylist, createPlaylistWithSongs, loadPlaylists } = usePlaylistContext();
   const [searchQuery, setSearchQuery] = useState('');
-  const [newPlaylistName, setNewPlaylistName] = useState('');
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setSearchQuery('');
-      setNewPlaylistName('');
       setLoading(false);
     }
   }, [isOpen]);
@@ -43,19 +41,20 @@ export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNav
   };
 
   const handleCreatePlaylist = async () => {
-    if (!newPlaylistName.trim() || loading) return;
+    const playlistName = searchQuery.trim();
+    if (!playlistName || loading) return;
     setLoading(true);
     try {
-      const playlistId = await createPlaylistWithSongs(newPlaylistName.trim(), songIds);
+      const playlistId = await createPlaylistWithSongs(playlistName, songIds);
       await loadPlaylists();
       onComplete();
       onClose();
-      onNavigateToPlaylist?.(playlistId, newPlaylistName.trim(), songIds);
+      onNavigateToPlaylist?.(playlistId, playlistName, songIds);
     } catch (err) {
       console.error('Failed to create playlist:', err);
     } finally {
       setLoading(false);
-      setNewPlaylistName('');
+      setSearchQuery('');
     }
   };
 
@@ -83,16 +82,13 @@ export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNav
               value={searchQuery}
               onValueChange={setSearchQuery}
               disabled={loading}
-              action={{
-                label: '×',
-                title: 'Close',
-                className: 'add-to-playlist-close',
-                onClick: onClose,
-              }}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   setSearchQuery('');
                   e.currentTarget.blur();
+                } else if (e.key === 'Enter' && searchQuery.trim()) {
+                  e.preventDefault();
+                  void handleCreatePlaylist();
                 }
               }}
             />
@@ -122,21 +118,17 @@ export function AddToPlaylistModal({ isOpen, onClose, songIds, onComplete, onNav
           )}
 
           <div className="add-to-playlist-create-row">
-            <input
-              className="add-to-playlist-create-input"
-              type="text"
-              placeholder=""
-              value={newPlaylistName}
-              onChange={e => setNewPlaylistName(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') handleCreatePlaylist();
-              }}
+            <button
+              className="ui-panel-button ui-panel-button--primary ui-nowrap add-to-playlist-cancel-button"
+              onClick={onClose}
               disabled={loading}
-            />
+            >
+              Cancel
+            </button>
             <button
               className="ui-panel-button ui-panel-button--primary ui-nowrap add-to-playlist-create-button"
               onClick={handleCreatePlaylist}
-              disabled={!newPlaylistName.trim() || loading}
+              disabled={!searchQuery.trim() || loading}
             >
               + NEW
             </button>

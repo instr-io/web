@@ -357,23 +357,9 @@
 .add-to-playlist-create-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 0;
-}
-
-.add-to-playlist-create-input {
-  flex: 1;
-  min-width: 0;
-  background: none;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: max(16px, 1em);
-  padding: 8px 6px;
-  outline: none;
-  border-radius: 0;
-  -webkit-appearance: none;
 }
 
 .add-to-playlist-create-button {
@@ -382,24 +368,25 @@
   box-shadow: none !important;
   color: var(--color-text-ui-subtle);
   font-weight: 500;
-  padding: 6px 0 6px 8px;
+  padding: 6px 0;
   letter-spacing: 0.08em;
 }
 
+.add-to-playlist-cancel-button {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  padding: 6px 0;
+  letter-spacing: 0.05em;
+}
+
 @media (hover: hover) {
+  .add-to-playlist-cancel-button:hover:not(:disabled),
   .add-to-playlist-create-button:hover:not(:disabled) {
     background: none;
     color: var(--color-text);
-  }
-}
-
-.add-to-playlist-create-input:disabled {
-  opacity: 0.6;
-}
-
-@media (min-width: 769px) {
-  .add-to-playlist-create-input {
-    font-size: 13px;
   }
 }
 
