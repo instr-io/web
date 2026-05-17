@@ -24,7 +24,6 @@ interface UsePlaybackQueueControllerParams {
   isShuffled: boolean;
   repeatAll: boolean;
   repeatOne: boolean;
-  getAndResetListenTime: () => number;
 }
 
 export function usePlaybackQueueController({
@@ -39,7 +38,6 @@ export function usePlaybackQueueController({
   isShuffled,
   repeatAll,
   repeatOne,
-  getAndResetListenTime,
 }: UsePlaybackQueueControllerParams) {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [playbackHistory, setPlaybackHistory] = useState<Song[]>([]);
@@ -144,16 +142,12 @@ export function usePlaybackQueueController({
         return;
       }
 
-      const previousSongId = currentSong?.song_id;
-      const previousArtist = currentSong?.artist || 'Unknown';
-      const listenDuration = getAndResetListenTime();
-
       if (currentSong) {
         setPlaybackHistory(prev => [currentSong, ...prev.slice(0, 49)]);
       }
 
       try {
-        const nextSong = await popNextSong(previousSongId, listenDuration, previousArtist);
+        const nextSong = await popNextSong();
         if (nextSong) {
           const songToPlay = await getSong(nextSong.song_id);
           setCurrentSong(songToPlay);
@@ -192,7 +186,6 @@ export function usePlaybackQueueController({
   }, [
     audioRef,
     currentSong,
-    getAndResetListenTime,
     loadQueue,
     playNextInProgressRef,
     playNextFromLocal,

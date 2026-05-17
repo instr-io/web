@@ -73,30 +73,42 @@ function formatDate(dateStr: string): string {
 }
 
 export function ListeningStatsView() {
-  const [stats, setStats] = useState<ListeningStats | null>(null);
+  const [recentStats, setRecentStats] = useState<ListeningStats | null>(null);
+  const [fullStats, setFullStats] = useState<ListeningStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [aggregateBy, setAggregateBy] = useState<AggregateBy>('day');
-  // Track whether we've fetched the full dataset yet
-  const [hasFetchedFull, setHasFetchedFull] = useState(false);
 
   useEffect(() => {
-    // "day" defaults to last 30 days; everything else needs the full dataset
-    const needsFull = aggregateBy !== 'day';
-
-    if (needsFull && hasFetchedFull) return; // already have full data
-    if (!needsFull && stats && !hasFetchedFull) return; // already have day data, haven't upgraded
+    if (recentStats) return;
 
     setLoading(true);
-    const startDate = needsFull ? undefined : thirtyDaysAgo();
-
-    getListeningStats(startDate)
+    getListeningStats(thirtyDaysAgo())
       .then(data => {
-        setStats(data);
-        if (needsFull) setHasFetchedFull(true);
+        setRecentStats(data);
       })
-      .catch(() => setStats({ artists: [], days: [] }))
+      .catch(() => setRecentStats({ artists: [], days: [] }))
       .finally(() => setLoading(false));
-  }, [aggregateBy, hasFetchedFull, stats]);
+  }, [recentStats]);
+
+  useEffect(() => {
+    if (aggregateBy === 'day' || fullStats) return;
+
+    setLoading(true);
+    getListeningStats()
+      .then(data => {
+        setFullStats(data);
+      })
+      .catch(() => setFullStats(recentStats ?? { artists: [], days: [] }))
+      .finally(() => setLoading(false));
+  }, [aggregateBy, fullStats, recentStats]);
+
+  const stats = useMemo(() => {
+    if (aggregateBy === 'day') {
+      return recentStats ?? fullStats;
+    }
+
+    return fullStats ?? recentStats;
+  }, [aggregateBy, fullStats, recentStats]);
 
   const aggregatedDays = useMemo(() => {
     if (!stats) return [];
@@ -104,7 +116,7 @@ export function ListeningStatsView() {
     return aggregateDays(sorted, aggregateBy);
   }, [stats, aggregateBy]);
 
-  if (loading) {
+  if (loading && !stats) {
     return null;
   }
 

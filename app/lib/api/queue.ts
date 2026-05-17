@@ -101,7 +101,41 @@ export async function getQueue(): Promise<QueueItem[]> {
   return data.items || [];
 }
 
-export async function popNextSong(previousSongId?: string, listenDurationSeconds?: number, previousArtist?: string): Promise<QueueItem | null> {
+export async function recordListen(previousSongId: string, listenDurationSeconds: number, previousArtist?: string): Promise<void> {
+  const userId = getCurrentUserId();
+  if (!userId || !previousSongId || listenDurationSeconds <= 0) {
+    return;
+  }
+
+  const token = await getAuthToken();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE}/queue/listen`, {
+    method: 'POST',
+    headers,
+    keepalive: true,
+    body: JSON.stringify({
+      user_id: userId,
+      previous_song_id: previousSongId,
+      listen_duration_seconds: listenDurationSeconds,
+      previous_artist: previousArtist || '',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
+  });
+
+  if (!response.ok && response.status !== 202) {
+    throw new Error('Failed to record listen');
+  }
+}
+
+export async function popNextSong(): Promise<QueueItem | null> {
   const userId = getCurrentUserId();
   if (!userId) {
     return null;
@@ -117,16 +151,6 @@ export async function popNextSong(previousSongId?: string, listenDurationSeconds
     method: 'POST',
     headers,
   };
-
-  if (previousSongId && listenDurationSeconds !== undefined && listenDurationSeconds > 0) {
-    headers['Content-Type'] = 'application/json';
-    fetchOptions.body = JSON.stringify({
-      previous_song_id: previousSongId,
-      listen_duration_seconds: listenDurationSeconds,
-      previous_artist: previousArtist || '',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);

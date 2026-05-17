@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Song } from '../lib/api';
+import { recordListen, type Song } from '../lib/api';
 import { decodeHtmlEntities } from '../lib/utils';
 
 interface UsePlaybackAudioParams {
@@ -29,6 +29,7 @@ export function usePlaybackAudio({
   const [duration, setDuration] = useState(0);
 
   const loadedSongRef = useRef<string | null>(null);
+  const trackedSongRef = useRef<{ song_id: string; artist?: string } | null>(null);
   const isLoadingNewSongRef = useRef(false);
   const consecutiveErrorsRef = useRef(0);
   const listenStartTimeRef = useRef<number | null>(null);
@@ -44,12 +45,29 @@ export function usePlaybackAudio({
     return total;
   }, []);
 
+  const flushTrackedListen = useCallback((trackedSong = trackedSongRef.current) => {
+    if (!trackedSong) return;
+
+    const total = getAndResetListenTime();
+    if (total <= 0) return;
+
+    void recordListen(trackedSong.song_id, total, trackedSong.artist).catch((error) => {
+      console.error('Failed to record listen:', error);
+    });
+  }, [getAndResetListenTime]);
+
   const playSong = useCallback((song: Song) => {
     const playbackUrl = song.stream_url;
     if (!playbackUrl || !audioRef.current) return;
 
-    listenStartTimeRef.current = null;
-    accumulatedListenTimeRef.current = 0;
+    if (trackedSongRef.current?.song_id !== song.song_id) {
+      flushTrackedListen(trackedSongRef.current);
+    } else {
+      listenStartTimeRef.current = null;
+      accumulatedListenTimeRef.current = 0;
+    }
+
+    trackedSongRef.current = { song_id: song.song_id, artist: song.artist };
     loadedSongRef.current = song.song_id;
 
     setCurrentSong(song);
@@ -69,7 +87,7 @@ export function usePlaybackAudio({
         setIsPlaying(false);
         loadedSongRef.current = null;
       });
-  }, [audioRef, setCurrentSong, setIsPlaying]);
+  }, [audioRef, flushTrackedListen, setCurrentSong, setIsPlaying]);
 
   const handleSeek = useCallback((progress: number) => {
     if (audioRef.current && duration) {
@@ -121,12 +139,20 @@ export function usePlaybackAudio({
 
   useEffect(() => {
     if (!currentSong) {
+      flushTrackedListen(trackedSongRef.current);
+      trackedSongRef.current = null;
       loadedSongRef.current = null;
       return;
     }
 
     const playbackUrl = currentSong.stream_url;
     if (!playbackUrl || !audioRef.current) return;
+
+    if (trackedSongRef.current?.song_id !== currentSong.song_id) {
+      flushTrackedListen(trackedSongRef.current);
+    }
+
+    trackedSongRef.current = { song_id: currentSong.song_id, artist: currentSong.artist };
 
     if (loadedSongRef.current === currentSong.song_id) {
       return;
@@ -162,7 +188,22 @@ export function usePlaybackAudio({
         setIsPlaying(false);
         loadedSongRef.current = null;
       });
-  }, [audioRef, currentSong, setIsPlaying]);
+  }, [audioRef, currentSong, flushTrackedListen, setIsPlaying]);
+
+  useEffect(() => {
+    const handlePageHide = () => {
+      flushTrackedListen(trackedSongRef.current);
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
+
+    return () => {
+      handlePageHide();
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
+    };
+  }, [flushTrackedListen]);
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;

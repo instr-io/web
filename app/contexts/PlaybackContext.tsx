@@ -85,7 +85,6 @@ export function PlaybackProvider({ children, currentPlaylistName = '' }: Playbac
     isShuffled,
     repeatAll,
     repeatOne,
-    getAndResetListenTime: audio.getAndResetListenTime,
   });
 
   const {
