@@ -5,6 +5,9 @@ import { Song, replaceSong } from '@/app/lib/api';
 import { InlineActionInput } from '@/app/components/common/InlineActionInput';
 import { LoadingDots } from '@/app/components/common/LoadingDots';
 
+const MOBILE_SELECTION_OWNER_EVENT = 'instrio:mobile-selection-owner';
+let nextMobileSelectionBarId = 1;
+
 interface SelectionActionBarProps {
   selectedCount: number;
   selectedSong?: Song;
@@ -30,7 +33,9 @@ export function SelectionActionBar({
   onExitMobileSelectionMode,
   onSongReplaced,
 }: SelectionActionBarProps) {
+  const instanceIdRef = useRef<number>(nextMobileSelectionBarId++);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [activeMobileOwnerId, setActiveMobileOwnerId] = useState<number | null>(null);
   const [replaceMode, setReplaceMode] = useState(false);
   const [replaceUrl, setReplaceUrl] = useState('');
   const [replaceState, setReplaceState] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -52,6 +57,26 @@ export function SelectionActionBar({
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  useEffect(() => {
+    const handleOwnerChange = (event: Event) => {
+      const ownerId = (event as CustomEvent<number>).detail;
+      setActiveMobileOwnerId(ownerId);
+    };
+
+    window.addEventListener(MOBILE_SELECTION_OWNER_EVENT, handleOwnerChange as EventListener);
+    return () => {
+      window.removeEventListener(MOBILE_SELECTION_OWNER_EVENT, handleOwnerChange as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isDesktop || !mobileSelectionMode) return;
+
+    const ownerId = instanceIdRef.current;
+    setActiveMobileOwnerId(ownerId);
+    window.dispatchEvent(new CustomEvent<number>(MOBILE_SELECTION_OWNER_EVENT, { detail: ownerId }));
+  }, [isDesktop, mobileSelectionMode, selectedCount]);
 
   // Exit replace mode when selection changes
   useEffect(() => {
@@ -93,7 +118,10 @@ export function SelectionActionBar({
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [replaceMode]);
 
-  const isMobileVisible = !isDesktop && mobileSelectionMode;
+  const isMobileVisible =
+    !isDesktop &&
+    mobileSelectionMode &&
+    (activeMobileOwnerId === null || activeMobileOwnerId === instanceIdRef.current);
 
   if ((isDesktop && selectedCount === 0) || (!isDesktop && !isMobileVisible)) return null;
 
