@@ -1,0 +1,88 @@
+html {
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  font-size: 13px;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) and (pointer: coarse) {
+  body {
+    overflow: hidden;
+    height: 100dvh;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-active);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.text-primary {
+  color: var(--color-text);
+}
+
+.text-secondary,
+.text-disabled {
+  color: var(--color-text-secondary);
+}
+
+.surface {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+}
+
+@media (hover: hover) {
+  .surface-hover:hover {
+    background-color: var(--color-active);
+  }
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}

@@ -1,0 +1,207 @@
+/* Popups, prompt bars, selection UI */
+
+.copied-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(24, 24, 30, 0.94);
+  color: var(--color-text);
+  padding: 12px 22px;
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  z-index: 10000;
+  border: 0;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  animation: fade-in-out var(--popup-duration, 2s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.share-button,
+.save-button,
+.playlist-save-btn {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-button {
+  color: var(--color-text-secondary);
+  padding: 2px;
+}
+
+.share-button-small {
+  width: 24px;
+  height: 24px;
+}
+
+.share-button-large,
+.save-button {
+  width: 40px;
+  height: 40px;
+}
+
+.save-button,
+.playlist-save-btn {
+  color: var(--color-text);
+  border-radius: 6px;
+}
+
+.playlist-save-btn {
+  min-width: 32px;
+  height: 32px;
+}
+
+.selection-action-bar {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 200;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.selection-count {
+  color: var(--color-text);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 0 8px 0 4px;
+  text-transform: uppercase;
+}
+
+.ui-inline-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.ui-inline-button--danger {
+  color: var(--color-error);
+}
+
+.ui-inline-button--dismiss {
+  padding: 6px;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.ui-action-prompt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-action-prompt__form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-action-prompt__input {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 4px 6px;
+  width: 240px;
+  outline: none;
+}
+
+.ui-action-prompt__input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.ui-action-prompt__input:disabled {
+  opacity: 0.5;
+}
+
+.ui-action-prompt--overlay {
+  width: 100%;
+}
+
+.ui-action-prompt--overlay .ui-action-prompt__form {
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-action-prompt--overlay .ui-action-prompt__input {
+  width: 100%;
+  min-width: 0;
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 2px));
+  }
+}
+
+@media (hover: hover) {
+  .share-button:hover {
+    color: var(--color-text);
+  }
+
+  .save-button:hover,
+  .playlist-save-btn:hover {
+    background-color: var(--color-active);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .ui-inline-button:hover {
+    color: var(--color-text);
+    background-color: var(--color-subtle);
+  }
+
+  .ui-inline-button--danger:hover {
+    color: var(--color-error-bright);
+    background-color: rgba(255, 100, 100, 0.08);
+  }
+
+  .ui-inline-button--dismiss:hover,
+  .ui-inline-button--submit:hover {
+    color: var(--color-text);
+    background: none;
+  }
+}
