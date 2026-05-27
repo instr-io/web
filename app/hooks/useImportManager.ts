@@ -74,8 +74,21 @@ export function useImportManager({
   const startSpotifyImport = spotifyImport.startImport;
 
   const handleSpotifyUrl = useCallback((url: string) => {
-    void startSpotifyImport(url);
-  }, [startSpotifyImport]);
+    const shouldShowLoadingScreen = currentViewRef.current === 'user-songs';
+    if (shouldShowLoadingScreen) {
+      setIsUrlBasedImport(true);
+    }
+
+    void startSpotifyImport(url).then((result) => {
+      if (!result && shouldShowLoadingScreen) {
+        setIsUrlBasedImport(false);
+      }
+    }).catch(() => {
+      if (shouldShowLoadingScreen) {
+        setIsUrlBasedImport(false);
+      }
+    });
+  }, [currentViewRef, setIsUrlBasedImport, startSpotifyImport]);
 
   const inlineImport = useImport({
     playlistId: currentView !== 'user-songs' && currentView !== 'discover' ? currentView : undefined,
