@@ -261,7 +261,9 @@ export function LibraryView({
             />
           )}
         </div>
-      ) : null}
+      ) : (
+        <div className="page-title-spacer" aria-hidden="true"></div>
+      )}
 
       {currentView === 'user-songs' && currentViewSongs.length > 0 && (
         <SearchField

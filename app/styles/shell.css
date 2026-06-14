@@ -224,6 +224,10 @@
 }
 
 @media (max-width: 768px) {
+  .page-title-spacer {
+    display: none;
+  }
+
   .outer-container {
     padding: 16px;
   }
