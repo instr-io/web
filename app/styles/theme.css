@@ -5,6 +5,7 @@
   --color-background: rgb(20, 20, 23);
   --color-surface: rgba(29, 29, 37, 0.92);
   --color-surface-raised: rgba(24, 24, 30, 0.94);
+  --color-dropdown-surface: #24242c;
   --color-subtle: rgba(255, 255, 255, 0.05);
   --color-button-surface: rgba(255, 255, 255, 0.055);
   --color-button-surface-strong: rgba(255, 255, 255, 0.08);
@@ -54,6 +55,7 @@
   --color-background: #f0ede6;
   --color-surface: rgba(241, 236, 227, 0.98);
   --color-surface-raised: #f6f1e8;
+  --color-dropdown-surface: #f6f1e8;
   --color-subtle: rgba(31, 29, 26, 0.045);
   --color-button-surface: #f3eee4;
   --color-button-surface-strong: #f8f5ee;

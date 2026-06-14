@@ -16,6 +16,11 @@ import { THEME_INIT_SCRIPT } from './lib/theme';
 export const metadata: Metadata = {
   title: 'instr.io',
   description: 'Create and stream instrumental versions of your favorite songs.',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {

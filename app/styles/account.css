@@ -33,7 +33,8 @@
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: var(--color-avatar-bg);
+  background: none;
+  background-color: var(--color-avatar-bg);
   color: var(--color-avatar-fg);
   cursor: pointer;
   display: flex;
@@ -42,6 +43,9 @@
   font-size: 14px;
   font-weight: 500;
   transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  opacity: 1;
 }
 
 .user-avatar--anonymous {
@@ -65,7 +69,8 @@
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: var(--color-surface-raised);
+  background: none;
+  background-color: var(--color-dropdown-surface, var(--color-surface-raised));
   border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   padding: 12px;
@@ -73,6 +78,8 @@
   box-shadow: 0 4px 12px var(--color-shadow-soft);
   z-index: 1000;
   font-size: 11px;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .user-info {
@@ -102,19 +109,29 @@
 }
 
 .user-email {
+  display: block;
   font-size: 11px;
-  color: var(--color-text);
+  color: var(--color-text) !important;
   margin-bottom: 8px;
-  text-decoration: none;
-  -webkit-text-fill-color: var(--color-text);
+  text-decoration: none !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  -webkit-text-decoration-skip: none;
 }
 
+.user-email *,
 .user-email a,
+.user-email a[href],
 .user-email a[href^="mailto:"],
-.user-email [x-apple-data-detectors] {
+.user-email a[x-apple-data-detectors],
+.user-email [x-apple-data-detectors],
+.user-email [x-apple-data-detectors="true"] {
   color: var(--color-text) !important;
   text-decoration: none !important;
   -webkit-text-fill-color: var(--color-text) !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  font: inherit !important;
 }
 
 .user-tier {
