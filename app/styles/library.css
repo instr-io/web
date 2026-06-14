@@ -123,6 +123,9 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .song-row.active,
@@ -205,6 +208,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: bottom;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .song-title-dot {
@@ -218,6 +224,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .duration {
@@ -292,6 +301,9 @@
   padding-top: 8px;
   padding-bottom: 8px;
   margin-bottom: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .playlist-back-row {
@@ -306,6 +318,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .add-songs-button {

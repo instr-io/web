@@ -152,6 +152,12 @@
     white-space: nowrap !important;
   }
 
+  .mobile-current-song {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
   .mobile-selection-toggle {
     display: inline-flex !important;
     align-items: center;
