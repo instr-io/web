@@ -685,7 +685,23 @@
 
   .queue-modal {
     background-color: var(--color-surface-raised);
-    max-height: none;
+    width: min(420px, calc(100vw - 32px));
+    max-width: min(420px, calc(100vw - 32px));
+    height: auto;
+    max-height: min(78vh, calc(100dvh - 64px));
+    border-radius: 8px;
+  }
+
+  .queue-modal-body {
+    max-height: inherit;
+  }
+
+  .queue-modal-content {
+    flex: 0 1 auto;
+  }
+
+  .queue-modal-section {
+    flex: 0 1 auto;
   }
 
   .add-to-playlist-list {
@@ -693,7 +709,9 @@
   }
 
   .queue-modal-list {
-    max-height: none;
+    flex: 0 1 auto;
+    max-height: min(24vh, 220px);
+    overflow-y: auto;
   }
 }
 
