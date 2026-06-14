@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { subscribeToAuth, signIn, signUp, signOut, AuthState } from '../../lib/auth';
 import { getUserQuota, UserQuota } from '../../lib/api';
+import { ThemeToggle } from '@/app/components/theme/ThemeToggle';
 
 interface UserProfileProps {
   onAboutClick?: () => void;
@@ -204,7 +205,7 @@ export function UserProfile({ onAboutClick }: UserProfileProps) {
                 {quota && (
                   <div className="user-quota">
                     <div className="quota-text">
-                      {quota.remaining} / {quota.daily_limit} conversions remaining
+                      {quota.remaining} / {quota.daily_limit}
                     </div>
                     <div className="quota-bar">
                       <div 
@@ -217,6 +218,9 @@ export function UserProfile({ onAboutClick }: UserProfileProps) {
                     </div>
                   </div>
                 )}
+                <div className="user-theme-row">
+                  <ThemeToggle className="theme-toggle--dropdown" compact label="Theme" showValue={false} />
+                </div>
               </div>
               <button className="sign-out-btn" onClick={handleSignOut}>
                 Sign Out

@@ -11,6 +11,7 @@ import './styles/feedback.css';
 import './styles/ui.css';
 import './styles/stats.css';
 import './styles/mobile.css';
+import { THEME_INIT_SCRIPT } from './lib/theme';
 
 export const metadata: Metadata = {
   title: 'instr.io',
@@ -31,8 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {children}
+      </body>
     </html>
   );
 }

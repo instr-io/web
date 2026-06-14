@@ -1,5 +1,7 @@
 html {
   overflow: hidden;
+  background-color: var(--color-background);
+  color-scheme: inherit;
 }
 
 body {
@@ -16,6 +18,7 @@ body {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  color-scheme: inherit;
 }
 
 @media (max-width: 768px) and (pointer: coarse) {
@@ -44,10 +47,32 @@ body {
 
 .no-scrollbar {
   scrollbar-width: none;
+  color-scheme: inherit;
+  scrollbar-color: var(--color-active) transparent;
 }
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.playlists-scroll-container,
+.songs-container,
+.mobile-menu-body,
+.modal-body,
+.modal-list,
+.stats-artist-list,
+.model-container {
+  color-scheme: inherit;
+  scrollbar-color: var(--color-active) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.playlists-scroll-container,
+.songs-container,
+.mobile-menu-body,
+.stats-container,
+.model-container {
+  background-color: var(--color-background);
 }
 
 .text-primary {
