@@ -217,6 +217,7 @@
   color: var(--color-text);
   font-family: var(--font-mono);
   font-size: 11px;
+  line-height: 1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
@@ -227,10 +228,16 @@
 }
 
 .theme-toggle-label {
+  display: inline-flex;
+  align-items: center;
   color: var(--color-text-secondary);
 }
 
 .theme-toggle-track {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
   position: relative;
   width: 34px;
   height: 18px;
@@ -244,12 +251,13 @@
 
 .theme-toggle-thumb {
   position: absolute;
-  top: 2px;
+  top: 50%;
   left: 2px;
   width: 12px;
   height: 12px;
   border-radius: 999px;
   background: var(--color-text);
+  transform: translateY(-50%);
   transition:
     transform 180ms ease,
     background-color 140ms ease;
@@ -261,7 +269,9 @@
 }
 
 .theme-toggle--compact {
+  gap: 0;
   min-width: 0;
+  padding: 6px 10px;
 }
 
 .theme-toggle--light .theme-toggle-track {
@@ -270,7 +280,7 @@
 }
 
 .theme-toggle--light .theme-toggle-thumb {
-  transform: translateX(16px);
+  transform: translate(16px, -50%);
   background: var(--color-surface-raised);
 }
 

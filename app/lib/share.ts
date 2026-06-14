@@ -1,11 +1,19 @@
+interface ShareOptions {
+  forceClipboard?: boolean;
+}
+
 /**
  * Share a URL via native share (mobile) or copy to clipboard (desktop).
  */
-export async function shareToClipboard(shareUrl: string, showPopup: (msg: string) => void) {
+export async function shareToClipboard(
+  shareUrl: string,
+  showPopup: (msg: string) => void,
+  options?: ShareOptions,
+) {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // Mobile native share
-  if (navigator.share && isMobile) {
+  if (navigator.share && isMobile && !options?.forceClipboard) {
     try {
       navigator.share({ url: shareUrl });
       return;

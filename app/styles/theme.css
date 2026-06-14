@@ -10,6 +10,8 @@
   --color-button-surface-strong: rgba(255, 255, 255, 0.08);
   --color-active: rgba(217, 217, 235, 0.404);
   --color-selected: rgba(46, 46, 56, 0.92);
+  --color-avatar-bg: rgba(255, 255, 255, 0.5);
+  --color-avatar-fg: #ffffff;
 
   /* Text */
   --color-text: #ffffff;
@@ -57,6 +59,8 @@
   --color-button-surface-strong: #f8f5ee;
   --color-active: rgba(31, 29, 26, 0.06);
   --color-selected: rgba(31, 29, 26, 0.1);
+  --color-avatar-bg: #1f1d1a;
+  --color-avatar-fg: #f8f4ec;
 
   /* Text */
   --color-text: #1f1d1a;

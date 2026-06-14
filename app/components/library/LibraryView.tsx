@@ -63,6 +63,7 @@ interface LibraryViewProps {
   currentViewSongs: Song[];
   processingSongs: Song[];
   currentSongId?: string;
+  focusedSongId?: string;
   isInitialLoad: boolean;
   isLoading: boolean;
   isViewLoading: boolean;
@@ -79,6 +80,7 @@ interface LibraryViewProps {
   onQueueAll: (songIds: string[]) => Promise<void>;
   onSongSelect: (song: Song) => void;
   onSongAddToQueue: (e: React.MouseEvent, song: Song) => void;
+  onShareSong?: (song: Song, options?: { forceClipboard?: boolean }) => Promise<void> | void;
   onSongDelete: (e: React.MouseEvent, song: Song) => Promise<void>;
   onSongRetry: (e: React.MouseEvent, song: Song) => Promise<void>;
   onArtistClick: (artistName: string) => void;
@@ -118,6 +120,7 @@ export function LibraryView({
   currentViewSongs,
   processingSongs,
   currentSongId,
+  focusedSongId,
   isInitialLoad,
   isLoading,
   isViewLoading,
@@ -134,6 +137,7 @@ export function LibraryView({
   onQueueAll,
   onSongSelect,
   onSongAddToQueue,
+  onShareSong,
   onSongDelete,
   onSongRetry,
   onArtistClick,
@@ -343,8 +347,13 @@ export function LibraryView({
               <VirtualizedSongList
                 songs={sortedCompleteSongs}
                 currentSongId={currentSongId}
+                focusedSongId={focusedSongId}
                 onSongSelect={onSongSelect}
                 onAddToQueue={onSongAddToQueue}
+                onShareSong={onShareSong ? (e, song) => {
+                  e.stopPropagation();
+                  void onShareSong(song);
+                } : undefined}
                 onDeleteSong={onSongDelete}
                 onArtistClick={onArtistClick}
                 showDeleteButton={!isCurrentPlaylistFromAnotherUser && (!isSharedPlaylist || sharedPlaylistUserId === userId)}
@@ -357,7 +366,9 @@ export function LibraryView({
                 hasSelection={multiSelect.selectedCount > 0}
                 onRightClickSelect={multiSelect.selectSingle}
                 showSelectionTargets={multiSelect.mobileSelectionMode}
-                onLongPressSelect={multiSelect.enterMobileSelectionMode}
+                onLongPressAction={multiSelect.mobileSelectionMode || !onShareSong ? undefined : (song) => {
+                  void onShareSong(song, { forceClipboard: true });
+                }}
               />
             ) : (
               <div className="empty-state">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { List, type ListImperativeAPI, type RowComponentProps } from 'react-window';
 import { Song } from '@/app/lib/api';
 import { decodeHtmlEntities, splitArtistTitle } from '@/app/lib/utils';
@@ -11,10 +11,12 @@ const SONG_ROW_HEIGHT = 20;
 interface VirtualizedSongRowData {
   songs: Song[];
   currentSongId?: string;
+  focusedSongId?: string;
   onSongSelect: (song: Song, index: number) => void;
   onAddToQueue: (e: React.MouseEvent, song: Song) => void;
   onDeleteSong?: (e: React.MouseEvent, song: Song) => void;
   onSaveToLibrary?: (e: React.MouseEvent, song: Song) => void;
+  onShareSong?: (e: React.MouseEvent, song: Song) => void;
   onArtistClick?: (artistName: string) => void;
   showDeleteButton: boolean;
   deleteButtonTitle: string;
@@ -24,7 +26,7 @@ interface VirtualizedSongRowData {
   onDragMove?: (index: number) => void;
   onRightClickSelect?: (songId: string) => void;
   showSelectionTargets?: boolean;
-  onLongPressSelect?: (songId: string) => void;
+  onLongPressAction?: (song: Song) => void;
 }
 
 const syntheticEvent = { stopPropagation: () => {}, preventDefault: () => {} } as React.MouseEvent;
@@ -33,10 +35,12 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
   const {
     songs,
     currentSongId,
+    focusedSongId,
     onSongSelect,
     onAddToQueue,
     onDeleteSong,
     onSaveToLibrary,
+    onShareSong,
     onArtistClick,
     showDeleteButton,
     deleteButtonTitle,
@@ -46,12 +50,13 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
     onDragMove,
     onRightClickSelect,
     showSelectionTargets,
-    onLongPressSelect,
+    onLongPressAction,
   } = data;
 
   const song = songs[index];
   const selected = isSelected?.(song.song_id) ?? false;
   const canDelete = showDeleteButton && !!onDeleteSong;
+  const isActive = currentSongId === song.song_id;
 
   const handleClick = (e: React.MouseEvent) => {
     if (onSelectionClick?.(index, song, e)) return;
@@ -78,13 +83,13 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
   const touchHandlers = useTouchActions({
     onSwipeRight: () => onAddToQueue(syntheticEvent, song),
     onSwipeLeft: canDelete ? () => onDeleteSong!(syntheticEvent, song) : undefined,
-    onLongPress: onLongPressSelect ? () => onLongPressSelect(song.song_id) : undefined,
+    onLongPress: onLongPressAction ? () => onLongPressAction(song) : undefined,
   });
 
   return (
     <div style={style} className="song-row-outer">
       <div
-        className={`song-row ${currentSongId === song.song_id ? 'active' : ''} ${selected ? 'selected' : ''}`}
+        className={`song-row ${isActive ? 'active' : ''} ${selected ? 'selected' : ''}`}
         onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseEnter={handleMouseEnter}
@@ -118,6 +123,30 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
           <div className={`song-select-indicator ${selected ? 'selected' : ''}`} aria-hidden="true" />
         ) : (
           <div className="song-actions">
+            {onShareSong && (
+              <button
+                className="song-queue-btn"
+                onClick={(e) => onShareSong(e, song)}
+                title="Copy share link"
+                aria-label="Copy share link"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <polyline points="16,6 12,2 8,6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+              </button>
+            )}
             {onSaveToLibrary && (
               <button
                 className="song-queue-btn"
@@ -153,10 +182,12 @@ function SongRow({ index, style, ...data }: RowComponentProps<VirtualizedSongRow
 interface VirtualizedSongListProps {
   songs: Song[];
   currentSongId?: string;
+  focusedSongId?: string;
   onSongSelect: (song: Song, index: number) => void;
   onAddToQueue: (e: React.MouseEvent, song: Song) => void;
   onDeleteSong?: (e: React.MouseEvent, song: Song) => void;
   onSaveToLibrary?: (e: React.MouseEvent, song: Song) => void;
+  onShareSong?: (e: React.MouseEvent, song: Song) => void;
   onArtistClick?: (artistName: string) => void;
   showDeleteButton?: boolean;
   deleteButtonTitle?: string;
@@ -168,16 +199,18 @@ interface VirtualizedSongListProps {
   hasSelection?: boolean;
   onRightClickSelect?: (songId: string) => void;
   showSelectionTargets?: boolean;
-  onLongPressSelect?: (songId: string) => void;
+  onLongPressAction?: (song: Song) => void;
 }
 
 export function VirtualizedSongList({
   songs,
   currentSongId,
+  focusedSongId,
   onSongSelect,
   onAddToQueue,
   onDeleteSong,
   onSaveToLibrary,
+  onShareSong,
   onArtistClick,
   showDeleteButton = false,
   deleteButtonTitle = '',
@@ -189,7 +222,7 @@ export function VirtualizedSongList({
   hasSelection,
   onRightClickSelect,
   showSelectionTargets,
-  onLongPressSelect,
+  onLongPressAction,
 }: VirtualizedSongListProps) {
   const listRef = useRef<ListImperativeAPI>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -214,13 +247,14 @@ export function VirtualizedSongList({
   }, []);
 
   useEffect(() => {
-    if (currentSongId && listRef.current) {
-      const currentIndex = songs.findIndex((song) => song.song_id === currentSongId);
+    const scrollTargetSongId = focusedSongId || currentSongId;
+    if (scrollTargetSongId && listRef.current) {
+      const currentIndex = songs.findIndex((song) => song.song_id === scrollTargetSongId);
       if (currentIndex !== -1) {
         listRef.current.scrollToRow({ index: currentIndex, align: 'smart' });
       }
     }
-  }, [currentSongId, songs]);
+  }, [currentSongId, focusedSongId, songs]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -240,10 +274,12 @@ export function VirtualizedSongList({
         rowProps={{
           songs,
           currentSongId,
+          focusedSongId,
           onSongSelect,
           onAddToQueue,
           onDeleteSong,
           onSaveToLibrary,
+          onShareSong,
           onArtistClick,
           showDeleteButton,
           deleteButtonTitle,
@@ -253,7 +289,7 @@ export function VirtualizedSongList({
           onDragMove,
           onRightClickSelect,
           showSelectionTargets,
-          onLongPressSelect,
+          onLongPressAction,
         }}
         style={{ height: listHeight }}
       />

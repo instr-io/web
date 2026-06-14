@@ -5,7 +5,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { Song, ArtistSong, addToOfficialQueue, updateUnofficialQueue, setPlaybackSource, saveSharedPlaylist, saveSongToLibrary, bulkSaveSongs, saveArtist, renamePlaylist, deletePlaylist, bulkDeleteSongs, removeSongFromPlaylist } from './lib/api';
 import { useIOSKeyboardFix } from './lib/useIOSKeyboardFix';
 import { usePopup } from './lib/usePopup';
-import { compareSongsByArtistThenTitle, deduplicateSongsByEffectiveTrack, shuffleArray } from './lib/utils';
+import { compareSongsByArtistThenTitle, deduplicateSongsByEffectiveTrack, shuffleArray, splitArtistTitle } from './lib/utils';
 import { PlaybackProvider, usePlaybackContext } from './contexts/PlaybackContext';
 import { SongProvider, useSongContext } from './contexts/SongContext';
 import { PlaylistProvider, usePlaylistContext } from './contexts/PlaylistContext';
@@ -80,6 +80,8 @@ function HomeContentInner(props: HomeContentInnerProps) {
     isSharedPlaylist,
     sharedPlaylistUserId,
     sharedPlaylistId,
+    targetSongId,
+    clearTargetSongId,
     replaceUrl,
     setUrlForPersonalPlaylist,
     hasActiveRouteParams,
@@ -108,6 +110,47 @@ function HomeContentInner(props: HomeContentInnerProps) {
   }, []);
   const { showCopiedPopup, popupMessage, popupDuration, showPopup } = usePopup();
 
+  const appendSongTarget = useCallback((baseUrl: string, songId: string) => {
+    const shareUrl = new URL(baseUrl, window.location.origin);
+    shareUrl.searchParams.set('s', songId);
+    return shareUrl.toString();
+  }, []);
+
+  const buildArtistSongShareUrl = useCallback((artistName: string, songId: string) => {
+    const shareUrl = new URL('/', window.location.origin);
+    shareUrl.searchParams.set('artist', artistName);
+    shareUrl.searchParams.set('s', songId);
+    return shareUrl.toString();
+  }, []);
+
+  const getPlaylistShareBaseUrl = useCallback(async (playlistId: string, options?: { shared?: boolean }) => {
+    if (options?.shared) {
+      if (!sharedPlaylistId || !sharedPlaylistUserId) {
+        return window.location.origin;
+      }
+
+      try {
+        const { sharePlaylist } = await import('./lib/api');
+        const result = await sharePlaylist(sharedPlaylistId);
+        return `${window.location.origin}${result.share_url}`;
+      } catch (err) {
+        return `${window.location.origin}?playlist=${sharedPlaylistUserId}:${sharedPlaylistId}`;
+      }
+    }
+
+    try {
+      const { sharePlaylist } = await import('./lib/api');
+      const result = await sharePlaylist(playlistId);
+      return `${window.location.origin}${result.share_url}`;
+    } catch (err) {
+      return `${window.location.origin}?playlist=${userId}:${playlistId}`;
+    }
+  }, [sharedPlaylistId, sharedPlaylistUserId, userId]);
+
+  const getSongShareArtist = useCallback((song: Song) => {
+    return splitArtistTitle(song).artist || currentArtistName;
+  }, [currentArtistName]);
+
   const refreshPlaylists = useCallback(async () => {
     await loadPlaylists(true);
   }, [loadPlaylists]);
@@ -135,6 +178,9 @@ function HomeContentInner(props: HomeContentInnerProps) {
   const discoverMultiSelect = useMultiSelect({ songs: discoverSongs, currentSongId: playback.currentSong?.song_id, onViewChange: currentView });
   const currentViewRef = useRef(currentView);
   const currentAuthUserIdRef = useRef<string | null>(userId);
+  const [consumedTargetKey, setConsumedTargetKey] = useState<string | null>(null);
+  const targetPlaybackKey = targetSongId ? `${currentView}:${currentArtistName ?? ''}:${targetSongId}` : null;
+  const focusedSharedSongId = targetSongId && consumedTargetKey !== targetPlaybackKey ? targetSongId : undefined;
 
   const {
     spotifyImport,
@@ -271,6 +317,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
   });
 
   const handleSongSelect = (song: Song) => {
+    clearTargetSongId();
     if (song.status !== 'COMPLETE') return;
 
     setPlaybackSource_(currentView);
@@ -374,15 +421,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
   const handleShareCurrentPlaylist = async () => {
     if (!sharedPlaylistId) return;
 
-    let shareUrl: string;
-    try {
-      const { sharePlaylist } = await import('./lib/api');
-      const result = await sharePlaylist(sharedPlaylistId);
-      shareUrl = `${window.location.origin}${result.share_url}`;
-    } catch (err) {
-      shareUrl = `${window.location.origin}?playlist=${sharedPlaylistUserId}:${sharedPlaylistId}`;
-    }
-
+    const shareUrl = await getPlaylistShareBaseUrl(sharedPlaylistId, { shared: true });
     await shareToClipboard(shareUrl, showPopup);
   };
 
@@ -394,17 +433,38 @@ function HomeContentInner(props: HomeContentInnerProps) {
       return;
     }
 
-    let shareUrl: string;
-    try {
-      const { sharePlaylist } = await import('./lib/api');
-      const result = await sharePlaylist(playlistId);
-      shareUrl = `${window.location.origin}${result.share_url}`;
-    } catch (err) {
-      shareUrl = `${window.location.origin}?playlist=${userId}:${playlistId}`;
-    }
-
+    const shareUrl = await getPlaylistShareBaseUrl(playlistId);
     await shareToClipboard(shareUrl, showPopup);
   };
+
+  const handleShareLibrarySong = useCallback(async (song: Song, options?: { forceClipboard?: boolean }) => {
+    let shareUrl = appendSongTarget(window.location.origin, song.song_id);
+
+    if (currentView === 'user-songs') {
+      const shareArtist = getSongShareArtist(song);
+      if (shareArtist) {
+        shareUrl = buildArtistSongShareUrl(shareArtist, song.song_id);
+      }
+    } else if (isSharedPlaylist && sharedPlaylistId) {
+      shareUrl = appendSongTarget(
+        await getPlaylistShareBaseUrl(sharedPlaylistId, { shared: true }),
+        song.song_id,
+      );
+    } else if (currentView !== 'discover') {
+      shareUrl = appendSongTarget(await getPlaylistShareBaseUrl(currentView), song.song_id);
+    }
+
+    await shareToClipboard(shareUrl, showPopup, options);
+  }, [
+    appendSongTarget,
+    buildArtistSongShareUrl,
+    currentView,
+    getPlaylistShareBaseUrl,
+    getSongShareArtist,
+    isSharedPlaylist,
+    sharedPlaylistId,
+    showPopup,
+  ]);
 
   const handleSaveCurrentPlaylist = async () => {
     if (!sharedPlaylistId || !sharedPlaylistUserId) return;
@@ -421,6 +481,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
   };
 
   const handleDiscoverSongSelect = async (song: ArtistSong, allSongs: ArtistSong[], artistName: string | null) => {
+    clearTargetSongId();
     setPlaybackSourceView('discover');
     setPlaybackSourceArtist(artistName);
     const localSongs = toSongListFromArtistSongs(allSongs, artistName);
@@ -440,6 +501,89 @@ function HomeContentInner(props: HomeContentInnerProps) {
       return;
     }
   };
+
+  useEffect(() => {
+    if (!targetSongId) {
+      setConsumedTargetKey(null);
+      return;
+    }
+
+    if (playback.currentSong?.song_id === targetSongId) {
+      if (consumedTargetKey !== targetPlaybackKey) {
+        setConsumedTargetKey(targetPlaybackKey);
+      }
+      return;
+    }
+
+    if (consumedTargetKey === targetPlaybackKey) {
+      return;
+    }
+
+    const viewSongs =
+      currentView === 'discover'
+        ? discoverSongs
+        : currentView === 'user-songs'
+          ? sortedCompleteSongs
+          : songs.currentViewSongs;
+
+    if (viewSongs.length === 0) {
+      return;
+    }
+
+    const selectedIndex = viewSongs.findIndex((candidate) => candidate.song_id === targetSongId);
+    if (selectedIndex === -1) {
+      return;
+    }
+
+    const selectedSong = viewSongs[selectedIndex];
+    if (selectedSong.status !== 'COMPLETE') {
+      return;
+    }
+
+    setConsumedTargetKey(targetPlaybackKey);
+
+    if (currentView === 'discover') {
+      setPlaybackSourceView('discover');
+      setPlaybackSourceArtist(currentArtistName);
+    } else {
+      setPlaybackSource_(currentView);
+      setPlaybackSourceArtist(null);
+    }
+
+    void startPlaybackSelection({
+      playback,
+      selectedSong,
+      songList: viewSongs,
+      selectedIndex,
+      source: currentView === 'discover' ? 'discover' : getPlaybackSourceForView(currentView),
+      isShuffled: playback.isShuffled,
+    });
+  }, [
+    currentArtistName,
+    consumedTargetKey,
+    currentView,
+    discoverSongs,
+    playback,
+    setPlaybackSource_,
+    setPlaybackSourceArtist,
+    songs.currentViewSongs,
+    sortedCompleteSongs,
+    targetPlaybackKey,
+    targetSongId,
+  ]);
+
+  useEffect(() => {
+    if (!targetSongId || !targetPlaybackKey || consumedTargetKey !== targetPlaybackKey) {
+      return;
+    }
+
+    const currentSongId = playback.currentSong?.song_id;
+    if (!currentSongId || currentSongId === targetSongId) {
+      return;
+    }
+
+    clearTargetSongId();
+  }, [clearTargetSongId, consumedTargetKey, playback.currentSong?.song_id, targetPlaybackKey, targetSongId]);
 
   const handleDiscoverAddToQueue = async (song: { song_id: string }) => {
     try {
@@ -608,6 +752,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             initialArtist={currentArtistName}
             onBack={preArtistView ? handleArtistBack : undefined}
             currentSongId={playback.currentSong?.song_id}
+            focusedSongId={focusedSharedSongId}
             isSelected={discoverMultiSelect.isSelected}
             onSelectionClick={discoverMultiSelect.handleClick}
             onDragStart={discoverMultiSelect.handleDragStart}
@@ -695,6 +840,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             currentViewSongs={songs.currentViewSongs}
             processingSongs={songs.processingSongs}
             currentSongId={playback.currentSong?.song_id}
+            focusedSongId={focusedSharedSongId}
             isInitialLoad={isInitialLoad}
             isLoading={songs.isLoading || isSpotifyImporting}
             isViewLoading={isViewLoading}
@@ -711,6 +857,7 @@ function HomeContentInner(props: HomeContentInnerProps) {
             onQueueAll={handleQueueAll}
             onSongSelect={handleSongSelect}
             onSongAddToQueue={(e, song) => { showPopup('Queued!', 1000); void songs.handleAddToQueue(e, song, playback.loadQueue); }}
+            onShareSong={handleShareLibrarySong}
             onSongDelete={songs.handleDeleteSong}
             onSongRetry={songs.handleRetrySong}
             onArtistClick={handleArtistClick}

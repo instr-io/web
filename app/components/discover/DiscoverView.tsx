@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getArtists, getArtistSongs, Artist, ArtistSong, Song } from '@/app/lib/api';
-import { decodeHtmlEntities } from '@/app/lib/utils';
+import { decodeHtmlEntities, splitArtistTitle } from '@/app/lib/utils';
 import { shareToClipboard } from '@/app/lib/share';
 import { VirtualizedSongList } from '@/app/components/songs/VirtualizedSongList';
 import { ConvertingSection } from '@/app/components/queue/ConvertingSection';
@@ -74,6 +74,7 @@ interface DiscoverViewProps {
   savedArtists?: string[];
   initialArtist?: string | null;
   currentSongId?: string;
+  focusedSongId?: string;
   isSelected?: (songId: string) => boolean;
   onSelectionClick?: (index: number, song: Song, event: React.MouseEvent) => boolean;
   onDragStart?: (index: number) => void;
@@ -99,6 +100,7 @@ export function DiscoverView({
   savedArtists = [],
   initialArtist,
   currentSongId,
+  focusedSongId,
   isSelected,
   onSelectionClick,
   onDragStart,
@@ -197,6 +199,16 @@ export function DiscoverView({
     if (!selectedArtist) return;
     const url = `${window.location.origin}?artist=${encodeURIComponent(selectedArtist)}`;
     await shareToClipboard(url, showPopup || (() => {}));
+  }, [selectedArtist, showPopup]);
+
+  const handleShareSong = useCallback(async (song: Song, forceClipboard = false) => {
+    const inferredArtist = selectedArtist || splitArtistTitle(song).artist;
+    const shareUrl = new URL('/', window.location.origin);
+    if (inferredArtist) {
+      shareUrl.searchParams.set('artist', inferredArtist);
+    }
+    shareUrl.searchParams.set('s', song.song_id);
+    await shareToClipboard(shareUrl.toString(), showPopup || (() => {}), forceClipboard ? { forceClipboard: true } : undefined);
   }, [selectedArtist, showPopup]);
 
   // Split songs into complete and processing
@@ -339,9 +351,14 @@ export function DiscoverView({
                 <VirtualizedSongList
                   songs={artistSongsAsSongs}
                   currentSongId={currentSongId}
+                  focusedSongId={focusedSongId}
                   onSongSelect={handleVirtualizedSongSelect}
                   onAddToQueue={onAddToQueue}
                   onSaveToLibrary={onSaveToLibrary}
+                  onShareSong={(e, song) => {
+                    e.stopPropagation();
+                    void handleShareSong(song);
+                  }}
                   isSelected={isSelected}
                   onSelectionClick={onSelectionClick}
                   onDragStart={onDragStart}
@@ -350,7 +367,9 @@ export function DiscoverView({
                   hasSelection={hasSelection}
                   onRightClickSelect={onRightClickSelect}
                   showSelectionTargets={mobileSelectionMode}
-                  onLongPressSelect={onEnterMobileSelectionMode}
+                  onLongPressAction={mobileSelectionMode ? undefined : (song) => {
+                    void handleShareSong(song, true);
+                  }}
                 />
               )}
             </div>

@@ -39,6 +39,8 @@ export interface HomeViewState {
   isSharedPlaylist: boolean;
   sharedPlaylistUserId: string | null;
   sharedPlaylistId: string | null;
+  targetSongId: string | null;
+  clearTargetSongId: () => void;
   replaceUrl: (url: string) => void;
   setUrlForPersonalPlaylist: (playlistId: string) => void;
   hasActiveRouteParams: boolean;
@@ -64,23 +66,44 @@ export function useHomeViewState(): HomeViewState {
   const router = useRouter();
   const hasHandledArtistParam = useRef(false);
   const hasHandledViewParam = useRef(false);
+  const routeTargetSongId = searchParams.get('s');
+  const [targetSongId, setTargetSongId] = useState<string | null>(routeTargetSongId);
 
   const replaceUrl = useCallback((url: string) => {
     window.history.replaceState(null, '', url);
   }, []);
 
+  const clearTargetSongId = useCallback(() => {
+    if (!targetSongId && !routeTargetSongId) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('s');
+    const nextQuery = nextParams.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
+
+    setTargetSongId(null);
+    replaceUrl(nextUrl);
+  }, [replaceUrl, routeTargetSongId, searchParams, targetSongId]);
+
   const setUrlForPersonalPlaylist = useCallback((playlistId: string) => {
     replaceUrl(`/?playlist_id=${encodeURIComponent(playlistId)}`);
   }, [replaceUrl]);
+
+  useEffect(() => {
+    setTargetSongId(routeTargetSongId);
+  }, [routeTargetSongId]);
 
   const hasActiveRouteParams = useMemo(() => {
     return Boolean(
       searchParams.get('playlist') ||
       searchParams.get('playlist_id') ||
       searchParams.get('artist') ||
-      searchParams.get('view')
+      searchParams.get('view') ||
+      targetSongId
     );
-  }, [searchParams]);
+  }, [searchParams, targetSongId]);
 
   const sharedPlaylistParts = useMemo(() => {
     if (!currentView.startsWith('shared:')) {
@@ -165,6 +188,8 @@ export function useHomeViewState(): HomeViewState {
     isSharedPlaylist: sharedPlaylistParts.isSharedPlaylist,
     sharedPlaylistUserId: sharedPlaylistParts.sharedPlaylistUserId,
     sharedPlaylistId: sharedPlaylistParts.sharedPlaylistId,
+    targetSongId,
+    clearTargetSongId,
     replaceUrl,
     setUrlForPersonalPlaylist,
     hasActiveRouteParams,

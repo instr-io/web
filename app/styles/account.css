@@ -33,19 +33,19 @@
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: var(--color-text-secondary);
-  color: var(--color-background);
+  background: var(--color-avatar-bg);
+  color: var(--color-avatar-fg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .user-avatar--anonymous {
-  color: transparent;
+  color: var(--color-avatar-fg);
 }
 
 .user-avatar img {
@@ -92,6 +92,13 @@
   justify-content: space-between;
   gap: 12px;
   padding: 8px 12px;
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+.theme-toggle--dropdown:hover {
+  background: transparent;
+  border-color: var(--color-border-strong);
 }
 
 .user-email {
