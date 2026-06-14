@@ -267,7 +267,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  padding-right: 8px;
+  padding-right: 0;
 }
 
 .discover-sort-header {
@@ -540,7 +540,7 @@
   }
 
   .discover-scroll {
-    padding-right: 8px;
+    padding-right: 0;
   }
 
   .song-list {

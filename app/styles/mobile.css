@@ -35,7 +35,7 @@
     display: block !important;
     padding: 6px 16px;
     margin-top: -8px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     background: var(--color-surface-raised);
     border-bottom: 1px solid var(--color-border);
     font-size: 12px;
