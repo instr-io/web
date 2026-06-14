@@ -180,7 +180,8 @@ function HomeContentInner(props: HomeContentInnerProps) {
   const currentAuthUserIdRef = useRef<string | null>(userId);
   const [consumedTargetKey, setConsumedTargetKey] = useState<string | null>(null);
   const targetPlaybackKey = targetSongId ? `${currentView}:${currentArtistName ?? ''}:${targetSongId}` : null;
-  const focusedSharedSongId = targetSongId && consumedTargetKey !== targetPlaybackKey ? targetSongId : undefined;
+  const sharedTargetSelectionId = targetSongId && consumedTargetKey !== targetPlaybackKey ? targetSongId : undefined;
+  const effectiveCurrentSongId = sharedTargetSelectionId ?? playback.currentSong?.song_id;
 
   const {
     spotifyImport,
@@ -751,8 +752,8 @@ function HomeContentInner(props: HomeContentInnerProps) {
               .filter((artistName): artistName is string => Boolean(artistName))}
             initialArtist={currentArtistName}
             onBack={preArtistView ? handleArtistBack : undefined}
-            currentSongId={playback.currentSong?.song_id}
-            focusedSongId={focusedSharedSongId}
+            currentSongId={effectiveCurrentSongId}
+            focusedSongId={targetSongId ?? undefined}
             isSelected={discoverMultiSelect.isSelected}
             onSelectionClick={discoverMultiSelect.handleClick}
             onDragStart={discoverMultiSelect.handleDragStart}
@@ -839,8 +840,8 @@ function HomeContentInner(props: HomeContentInnerProps) {
             sortedCompleteSongs={sortedCompleteSongs}
             currentViewSongs={songs.currentViewSongs}
             processingSongs={songs.processingSongs}
-            currentSongId={playback.currentSong?.song_id}
-            focusedSongId={focusedSharedSongId}
+            currentSongId={effectiveCurrentSongId}
+            focusedSongId={targetSongId ?? undefined}
             isInitialLoad={isInitialLoad}
             isLoading={songs.isLoading || isSpotifyImporting}
             isViewLoading={isViewLoading}

@@ -105,6 +105,16 @@
   font-size: 11px;
   color: var(--color-text);
   margin-bottom: 8px;
+  text-decoration: none;
+  -webkit-text-fill-color: var(--color-text);
+}
+
+.user-email a,
+.user-email a[href^="mailto:"],
+.user-email [x-apple-data-detectors] {
+  color: var(--color-text) !important;
+  text-decoration: none !important;
+  -webkit-text-fill-color: var(--color-text) !important;
 }
 
 .user-tier {
