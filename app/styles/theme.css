@@ -81,8 +81,8 @@
 
   /* Effects */
   --color-overlay: rgba(31, 29, 26, 0.45);
-  --color-shadow-soft: rgba(49, 43, 34, 0.08);
-  --color-shadow-strong: rgba(49, 43, 34, 0.14);
+  --color-shadow-soft: rgba(49, 43, 34, 0.05);
+  --color-shadow-strong: rgba(49, 43, 34, 0.1);
   --color-progress-track: rgba(31, 29, 26, 0.1);
   --color-progress-fill: rgba(31, 29, 26, 0.34);
 }

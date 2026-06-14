@@ -110,134 +110,128 @@ export function UserProfile({ onAboutClick }: UserProfileProps) {
     setPassword('');
   };
 
+  const openProfileDropdown = () => {
+    const newShow = !showDropdown;
+    setShowDropdown(newShow);
+    if (newShow && !quota) {
+      void loadQuota();
+    }
+  };
+
   if (authState.isLoading) {
     return null;
   }
 
-  // Show sign in button for anonymous users
-  if (authState.userType === 'anonymous') {
-    return (
-      <div className="user-profile">
-        <button className="sign-in-btn" onClick={() => setShowAuthForm(true)}>
-          Sign In
+  const isAnonymous = authState.userType === 'anonymous';
+  const authUser = authState.userType === 'supabase' ? authState.user : null;
+  const isSupabaseUser = Boolean(authUser);
+  const userInitial = authUser?.email?.charAt(0).toUpperCase() || null;
+  const userEmail = authUser?.email || null;
+
+  return (
+    <div className="user-profile">
+      <div className="user-avatar-container">
+        <button
+          className={`user-avatar ${isAnonymous ? 'user-avatar--anonymous' : ''}`.trim()}
+          onClick={openProfileDropdown}
+          aria-label={isAnonymous ? 'Open profile menu' : 'Open user menu'}
+        >
+          {authUser?.user_metadata?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={authUser.user_metadata.avatar_url} alt="User avatar" />
+          ) : isSupabaseUser ? (
+            <span className="user-initial">{userInitial}</span>
+          ) : isAnonymous ? (
+            <span className="user-initial">?</span>
+          ) : null}
         </button>
-        
-        {showAuthForm && (
-          <div className="auth-modal-overlay" onClick={() => setShowAuthForm(false)}>
-            <div className="auth-modal" onClick={e => e.stopPropagation()}>
-              <div className="auth-header">
-                <h3>{isSignUp ? 'Sign Up' : 'Sign In'}</h3>
-                <button className="auth-close" onClick={() => setShowAuthForm(false)}>×</button>
-              </div>
-              
-              <form onSubmit={handleAuth} className="auth-form">
-                {authError && (
-                  <div className={`auth-message ${
-                    authError.includes('verification') ? 'success' : 
-                    authError.includes('Welcome back') ? 'success' : 'error'
-                  }`}>
-                    {authError}
+
+        {showDropdown && (
+          <div className="user-dropdown">
+            <div className="user-info">
+              {userEmail && <div className="user-email">{userEmail}</div>}
+              {quota && (
+                <div className="user-quota">
+                  <div className="quota-text">
+                    {quota.remaining} / {quota.daily_limit}
                   </div>
-                )}
-                
-                <div className="auth-field">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="quota-bar">
+                    <div
+                      className="quota-fill"
+                      style={{ width: `${(quota.conversions_used / quota.daily_limit) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="quota-reset">
+                    Resets in {quota.reset_in_hours}h {quota.reset_in_minutes}m
+                  </div>
                 </div>
-                
-                <div className="auth-field">
-                  <label htmlFor="password">Password</label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <button type="submit" className={`auth-submit ${isSignUp ? 'sign-up' : ''}`} disabled={authLoading}>
-                  {authLoading ? 'LOADING' : (isSignUp ? 'Sign Up' : 'Sign In')}
-                </button>
-                
-                <button type="button" className="auth-toggle" onClick={toggleAuthMode}>
-                  {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-                </button>
-              </form>
+              )}
+              <div className="user-theme-row">
+                <ThemeToggle className="theme-toggle--dropdown" compact label="Theme" showValue={false} />
+              </div>
             </div>
+            <button
+              className="sign-out-btn"
+              onClick={isAnonymous ? () => { setShowDropdown(false); setShowAuthForm(true); } : () => void handleSignOut()}
+            >
+              {isAnonymous ? 'Sign In' : 'Sign Out'}
+            </button>
           </div>
         )}
       </div>
-    );
-  }
 
-  // Show user profile for authenticated Supabase users
-  if (authState.userType === 'supabase' && authState.user) {
-    const userInitial = authState.user.email?.charAt(0).toUpperCase() || '?';
-    const userEmail = authState.user.email || 'User';
-
-    return (
-      <div className="user-profile">
-        <div className="user-avatar-container">
-          <button 
-            className="user-avatar"
-            onClick={() => { const newShow = !showDropdown; setShowDropdown(newShow); if (newShow && !quota) loadQuota(); }}
-          >
-            {authState.user.user_metadata?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={authState.user.user_metadata.avatar_url} alt="User avatar" />
-            ) : (
-              <span className="user-initial">{userInitial}</span>
-            )}
-          </button>
-          
-          {showDropdown && (
-            <div className="user-dropdown">
-              <div className="user-info">
-                <div className="user-email">{userEmail}</div>
-                {quota && (
-                  <div className="user-quota">
-                    <div className="quota-text">
-                      {quota.remaining} / {quota.daily_limit}
-                    </div>
-                    <div className="quota-bar">
-                      <div 
-                        className="quota-fill" 
-                        style={{ width: `${(quota.conversions_used / quota.daily_limit) * 100}%` }}
-                      ></div>
-                    </div>
-                    <div className="quota-reset">
-                      Resets in {quota.reset_in_hours}h {quota.reset_in_minutes}m
-                    </div>
-                  </div>
-                )}
-                <div className="user-theme-row">
-                  <ThemeToggle className="theme-toggle--dropdown" compact label="Theme" showValue={false} />
-                </div>
-              </div>
-              <button className="sign-out-btn" onClick={handleSignOut}>
-                Sign Out
-              </button>
+      {showAuthForm && (
+        <div className="auth-modal-overlay" onClick={() => setShowAuthForm(false)}>
+          <div className="auth-modal" onClick={e => e.stopPropagation()}>
+            <div className="auth-header">
+              <h3>{isSignUp ? 'Sign Up' : 'Sign In'}</h3>
+              <button className="auth-close" onClick={() => setShowAuthForm(false)}>×</button>
             </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
-  // Fallback - should not happen with proper auth initialization
-  return (
-    <div className="user-profile">
-      <button className="sign-in-btn" onClick={() => setShowAuthForm(true)}>
-        Sign In
-      </button>
+            <form onSubmit={handleAuth} className="auth-form">
+              {authError && (
+                <div className={`auth-message ${
+                  authError.includes('verification') ? 'success' :
+                  authError.includes('Welcome back') ? 'success' : 'error'
+                }`}>
+                  {authError}
+                </div>
+              )}
+
+              <div className="auth-field">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <button type="submit" className={`auth-submit ${isSignUp ? 'sign-up' : ''}`} disabled={authLoading}>
+                {authLoading ? 'LOADING' : (isSignUp ? 'Sign Up' : 'Sign In')}
+              </button>
+
+              <button type="button" className="auth-toggle" onClick={toggleAuthMode}>
+                {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

@@ -40,6 +40,7 @@ interface MainLayoutProps {
   onHomeClick?: () => void;
   sidebarSearchQuery?: string;
   compactMobilePlayerSpacing?: boolean;
+  queueContextLabel?: string;
 }
 
 interface PlaylistSidebarItemProps {
@@ -190,6 +191,7 @@ export function MainLayout({
   onHomeClick,
   sidebarSearchQuery = '',
   compactMobilePlayerSpacing = false,
+  queueContextLabel,
 }: MainLayoutProps) {
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
@@ -383,6 +385,7 @@ export function MainLayout({
       <QueueModal
         isOpen={isQueueModalOpen}
         onClose={() => setIsQueueModalOpen(false)}
+        contextLabel={queueContextLabel}
       />
 
 

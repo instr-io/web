@@ -97,6 +97,8 @@ export function usePlaybackLauncher({
 
       const firstArtist = pickRandomArtist(lastRandomArtistRef.current);
       lastRandomArtistRef.current = firstArtist.name;
+      setPlaybackSourceView('discover');
+      setPlaybackSourceArtist(firstArtist.name);
       const firstArtistSongs = (await getArtistSongs(firstArtist.name)).filter((song) => song.status === 'COMPLETE');
       if (firstArtistSongs.length === 0) {
         return;
@@ -149,7 +151,7 @@ export function usePlaybackLauncher({
     } catch (error) {
       console.error('Failed to play random discover song:', error);
     }
-  }, [playback]);
+  }, [playback, setPlaybackSourceArtist, setPlaybackSourceView]);
 
   const startPlaybackFromCurrentContext = useCallback(async () => {
     const hasDiscoverSongs = currentView === 'discover' && discoverSongs.length > 0;

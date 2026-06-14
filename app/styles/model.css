@@ -1,5 +1,39 @@
 /* Model page visuals */
 
+.model-container {
+  --model-copy-color: var(--color-text-dim);
+  --model-copy-strong: var(--color-text);
+  --model-section-color: var(--color-text);
+  --model-link-color: var(--color-text-dim);
+  --model-link-hover: var(--color-text-muted);
+  --model-ref-color: var(--color-text-faint);
+  --model-visual-muted: var(--color-text-dim);
+  --model-visual-line: var(--color-border);
+  --model-block-text: var(--color-background);
+  --model-visual-block-soft: rgba(255, 255, 255, 0.2);
+  --model-visual-block-mid: rgba(255, 255, 255, 0.25);
+  --model-visual-block-strong: rgba(255, 255, 255, 0.4);
+  --model-visual-highlight: rgba(255, 255, 255, 0.55);
+  --model-heatmap-rgb: 255, 255, 255;
+}
+
+:root[data-theme='light'] .model-container {
+  --model-copy-color: rgba(31, 29, 26, 0.72);
+  --model-copy-strong: rgba(31, 29, 26, 0.92);
+  --model-section-color: rgba(31, 29, 26, 0.84);
+  --model-link-color: rgba(31, 29, 26, 0.7);
+  --model-link-hover: rgba(31, 29, 26, 0.82);
+  --model-ref-color: rgba(31, 29, 26, 0.6);
+  --model-visual-muted: rgba(31, 29, 26, 0.66);
+  --model-visual-line: rgba(31, 29, 26, 0.14);
+  --model-block-text: var(--color-surface-raised);
+  --model-visual-block-soft: rgba(31, 29, 26, 0.08);
+  --model-visual-block-mid: rgba(31, 29, 26, 0.14);
+  --model-visual-block-strong: rgba(31, 29, 26, 0.24);
+  --model-visual-highlight: rgba(31, 29, 26, 0.34);
+  --model-heatmap-rgb: 31, 29, 26;
+}
+
 .vis-spectrum {
   margin: 14px 0;
   flex-shrink: 0;
@@ -15,13 +49,13 @@
 
 .vis-spectrum-col {
   flex: 1;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--model-visual-block-soft);
   border-radius: 1px 1px 0 0;
   min-width: 0;
 }
 
 .vis-spectrum-highlight {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--model-visual-highlight);
 }
 
 .vis-spectrum-labels {
@@ -32,7 +66,7 @@
 
 .vis-spectrum-labels span {
   font-size: 9px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   text-align: center;
   min-width: 0;
   overflow: hidden;
@@ -45,7 +79,7 @@
 
 .vis-u-each-band {
   font-size: 9px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   margin-bottom: 8px;
 }
 
@@ -55,7 +89,7 @@
   margin-bottom: 8px;
   font-size: 9px;
   letter-spacing: 1px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
 }
 
 .vis-u-diagram {
@@ -83,24 +117,24 @@
   align-items: center;
   justify-content: center;
   font-size: 9px;
-  color: var(--color-background);
+  color: var(--model-block-text);
 }
 
 .vis-u-enc {
-  background: rgba(255, 255, 255, 0.45);
+  background: var(--model-visual-highlight);
 }
 
 .vis-u-dec {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--model-visual-block-mid);
 }
 
 .vis-u-bn {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--model-visual-highlight);
 }
 
 .vis-u-arrow {
   font-size: 8px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   text-align: center;
   padding: 1px 0;
 }
@@ -124,14 +158,14 @@
 
 .vis-u-skip-row span {
   font-size: 7px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   flex-shrink: 0;
 }
 
 .vis-u-skip-line {
   flex: 1;
   height: 1px;
-  background: var(--color-border);
+  background: var(--model-visual-line);
 }
 
 .vis-u-bottleneck {
@@ -150,7 +184,7 @@
   justify-content: space-between;
   margin-top: 8px;
   font-size: 9px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
 }
 
 .vis-bn {
@@ -170,20 +204,20 @@
 .vis-bn-dash {
   width: 24px;
   height: 14px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--model-visual-block-soft);
   border-radius: 2px;
 }
 
 .vis-bn-label-top,
 .vis-bn-label-bottom {
   font-size: 9px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   margin-top: 8px;
 }
 
 .vis-bn-arrow {
   font-size: 16px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   margin: 6px 0;
   line-height: 1;
 }
@@ -197,7 +231,7 @@
 .vis-bn-solid-block {
   width: 24px;
   height: 14px;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--model-visual-block-strong);
   border-radius: 2px;
 }
 
@@ -218,7 +252,7 @@
   display: block;
   font-size: 9px;
   letter-spacing: 1px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   text-align: center;
   margin-bottom: 4px;
 }
@@ -243,7 +277,7 @@
 
 .vis-mask-op {
   font-size: 10px;
-  color: var(--color-text-dim);
+  color: var(--model-visual-muted);
   flex-shrink: 0;
   align-self: center;
   margin-top: 14px;

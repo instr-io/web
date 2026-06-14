@@ -5,7 +5,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(24, 24, 30, 0.94);
+  background-color: var(--color-surface);
   color: var(--color-text);
   padding: 12px 22px;
   border-radius: 6px;
@@ -14,7 +14,7 @@
   text-transform: uppercase;
   z-index: 10000;
   border: 0;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 8px 22px var(--color-shadow-soft);
   backdrop-filter: blur(10px);
   animation: fade-in-out var(--popup-duration, 2s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
   will-change: opacity, transform;
@@ -67,7 +67,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--color-surface-raised);
+  background-color: var(--color-surface);
   border-radius: 8px;
   padding: 8px 12px;
   display: flex;
@@ -75,11 +75,11 @@
   gap: 4px;
   z-index: 200;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.028);
+  border: 1px solid var(--color-border);
   border-top-color: transparent;
   box-shadow:
-    0 8px 22px rgba(0, 0, 0, 0.28),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    0 8px 22px var(--color-shadow-soft),
+    inset 0 -1px 0 var(--color-subtle);
 }
 
 .selection-count {

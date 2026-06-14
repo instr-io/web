@@ -24,7 +24,13 @@ export function ThemeToggle({
   label,
   showValue,
 }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<AppTheme>('dark');
+  const [theme, setTheme] = useState<AppTheme>(() => {
+    if (typeof window === 'undefined') {
+      return 'dark';
+    }
+
+    return getStoredTheme() ?? readThemeFromDocument();
+  });
 
   useEffect(() => {
     const syncTheme = (nextTheme?: AppTheme) => {

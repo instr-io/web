@@ -206,17 +206,17 @@ function MaskGraphic() {
     <div className="vis-mask-container">
       <div className="vis-mask-grid-group">
         <span className="vis-mask-grid-label">ORIGINAL</span>
-        <HeatmapGrid data={SPEC} colorFn={v => `rgba(255, 255, 255, ${v * 0.8})`} />
+        <HeatmapGrid data={SPEC} colorFn={v => `rgba(var(--model-heatmap-rgb), ${v * 0.8})`} />
       </div>
       <span className="vis-mask-op">&times;</span>
       <div className="vis-mask-grid-group">
         <span className="vis-mask-grid-label">MASK</span>
-        <HeatmapGrid data={MASK} colorFn={v => `rgba(255, 255, 255, ${v * 0.7})`} />
+        <HeatmapGrid data={MASK} colorFn={v => `rgba(var(--model-heatmap-rgb), ${v * 0.7})`} />
       </div>
       <span className="vis-mask-op">=</span>
       <div className="vis-mask-grid-group">
         <span className="vis-mask-grid-label">RESULT</span>
-        <HeatmapGrid data={result} colorFn={v => `rgba(255, 255, 255, ${v * 0.9})`} />
+        <HeatmapGrid data={result} colorFn={v => `rgba(var(--model-heatmap-rgb), ${v * 0.9})`} />
       </div>
     </div>
   );
@@ -237,18 +237,18 @@ export function ModelView() {
         }
         .model-container p {
           font-size: 12px;
-          color: var(--color-text-dim);
+          color: var(--model-copy-color);
           margin: 6px 0;
           line-height: 1.7;
         }
         .model-container em {
-          color: var(--color-text);
+          color: var(--model-copy-strong);
           font-style: normal;
         }
         .model-section {
           font-size: 12px;
           letter-spacing: 1px;
-          color: var(--color-text);
+          color: var(--model-section-color);
           margin: 36px 0 10px 0;
           font-weight: normal;
         }
@@ -256,12 +256,12 @@ export function ModelView() {
           margin-top: 0;
         }
         .model-container a {
-          color: var(--color-text-dim);
+          color: var(--model-link-color);
           text-decoration: none;
           border-bottom: 1px solid var(--color-border);
         }
         .model-container a:hover {
-          color: var(--color-text-muted);
+          color: var(--model-link-hover);
         }
         .refs {
           margin-top: 24px;
@@ -270,7 +270,7 @@ export function ModelView() {
         }
         .refs p {
           font-size: 11px;
-          color: var(--color-text-faint);
+          color: var(--model-ref-color);
         }
         @media (max-width: 768px) {
           .model-container {
