@@ -216,7 +216,7 @@ export function MainLayout({
   };
 
   return (
-    <div className="outer-container">
+    <div className={`outer-container ${compactMobilePlayerSpacing ? 'outer-container--compact-mobile-player' : ''}`}>
       <header className="site-header">
         <div className="ui-row ui-row--center ui-row--gap-lg">
           <MobileMenu>

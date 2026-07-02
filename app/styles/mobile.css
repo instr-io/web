@@ -220,7 +220,7 @@
     z-index: 100;
     height: auto !important;
     min-height: var(--player-height);
-    padding: 16px 16px var(--mobile-player-padding-bottom, 20px) 16px;
+    padding: var(--mobile-player-top-padding, 16px) 16px var(--mobile-player-bottom-padding, calc(16px + env(safe-area-inset-bottom, 0px))) 16px;
     background-color: var(--color-background);
     box-sizing: content-box;
   }
@@ -230,11 +230,11 @@
   }
 
   .main-content-wrapper {
-    padding-bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: var(--mobile-player-reserve, calc(var(--player-height) + 32px + env(safe-area-inset-bottom, 0px))) !important;
   }
 
   .main-content-wrapper.main-content-wrapper--has-bottom-panel {
-    padding-bottom: calc(var(--player-height) + 44px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(var(--mobile-player-reserve, calc(var(--player-height) + 32px + env(safe-area-inset-bottom, 0px))) + 44px) !important;
   }
 
   .add-songs-button {
@@ -246,10 +246,6 @@
 
   .main-content {
     padding-bottom: 0 !important;
-  }
-
-  .player {
-    --mobile-player-padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
   .modal-overlay {
