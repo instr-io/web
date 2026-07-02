@@ -226,6 +226,7 @@ export function VirtualizedSongList({
 }: VirtualizedSongListProps) {
   const listRef = useRef<ListImperativeAPI>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastAutoScrollTargetRef = useRef<string | null>(null);
   const [listHeight, setListHeight] = useState(400);
 
   useEffect(() => {
@@ -248,12 +249,23 @@ export function VirtualizedSongList({
 
   useEffect(() => {
     const scrollTargetSongId = focusedSongId || currentSongId;
-    if (scrollTargetSongId && listRef.current) {
-      const currentIndex = songs.findIndex((song) => song.song_id === scrollTargetSongId);
-      if (currentIndex !== -1) {
-        listRef.current.scrollToRow({ index: currentIndex, align: 'smart' });
-      }
+    if (!scrollTargetSongId || !listRef.current) {
+      lastAutoScrollTargetRef.current = null;
+      return;
     }
+
+    const autoScrollTargetKey = `${focusedSongId ? 'focus' : 'play'}:${scrollTargetSongId}`;
+    if (lastAutoScrollTargetRef.current === autoScrollTargetKey) {
+      return;
+    }
+
+    const currentIndex = songs.findIndex((song) => song.song_id === scrollTargetSongId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    listRef.current.scrollToRow({ index: currentIndex, align: 'smart' });
+    lastAutoScrollTargetRef.current = autoScrollTargetKey;
   }, [currentSongId, focusedSongId, songs]);
 
   useEffect(() => {
