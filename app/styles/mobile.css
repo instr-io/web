@@ -230,6 +230,10 @@
   }
 
   .main-content-wrapper {
+    padding-bottom: calc(var(--player-height) + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .main-content-wrapper.main-content-wrapper--has-bottom-panel {
     padding-bottom: calc(var(--player-height) + 44px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
@@ -262,6 +266,10 @@
     max-width: 100% !important;
     box-sizing: border-box !important;
     min-width: 0 !important;
+  }
+
+  .action-area--desktop-only-content {
+    display: none !important;
   }
 }
 

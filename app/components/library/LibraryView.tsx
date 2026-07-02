@@ -157,6 +157,20 @@ export function LibraryView({
   const showTitleLoading = currentView !== 'user-songs' && isViewLoading;
   const isPlaylistView = currentView !== 'user-songs';
   const showPlaylistBack = currentView !== 'user-songs' && Boolean(onBack);
+  const showAddSongsArea = !isSharedPlaylist && (!isCurrentPlaylistFromAnotherUser || currentView === 'user-songs');
+  const showSharedPlaylistInfo = isSharedPlaylist && sharedPlaylistUserId !== userId;
+  const showForeignPlaylistInfo = isCurrentPlaylistFromAnotherUser;
+  const showProcessingSection = processingSongs.length > 0;
+  const showActionArea = showAddSongsArea || showSharedPlaylistInfo || showForeignPlaylistInfo || showProcessingSection;
+  const actionAreaClassName = [
+    'action-area',
+    currentView !== 'user-songs' ? 'action-area--playlist' : '',
+    !showSharedPlaylistInfo && !showForeignPlaylistInfo && !showProcessingSection ? 'action-area--desktop-only-content' : '',
+  ].filter(Boolean).join(' ');
+  const mainContentWrapperClassName = [
+    'main-content-wrapper',
+    showSharedPlaylistInfo || showForeignPlaylistInfo || showProcessingSection ? 'main-content-wrapper--has-bottom-panel' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <>
@@ -340,7 +354,7 @@ export function LibraryView({
         </div>
       )}
 
-      <div className="main-content-wrapper">
+      <div className={mainContentWrapperClassName}>
         <div className="songs-container-full">
           <div className="song-list">
             {sortedCompleteSongs.length > 0 ? (
@@ -395,8 +409,9 @@ export function LibraryView({
           </div>
         </div>
 
-        <div className={`action-area ${currentView !== 'user-songs' ? 'action-area--playlist' : ''}`}>
-          {!isSharedPlaylist && (!isCurrentPlaylistFromAnotherUser || currentView === 'user-songs') && (
+        {showActionArea && (
+          <div className={actionAreaClassName}>
+            {showAddSongsArea && (
             <div className="action-add-songs">
               <button
                 className="add-songs-button"
@@ -408,27 +423,30 @@ export function LibraryView({
                 <div className="conversion-result">{importProgress}</div>
               )}
             </div>
-          )}
+            )}
 
-          {isSharedPlaylist && sharedPlaylistUserId !== userId && (
+            {showSharedPlaylistInfo && (
             <div className="shared-playlist-info">
               <p className="text-secondary">You&apos;re listening to a shared playlist</p>
             </div>
-          )}
+            )}
 
-          {isCurrentPlaylistFromAnotherUser && (
+            {showForeignPlaylistInfo && (
             <div className="shared-playlist-info">
               <p className="text-secondary">Listening to a shared playlist</p>
             </div>
-          )}
+            )}
 
-          <ConvertingSection
-            processingSongs={processingSongs}
-            onRetrySong={onSongRetry}
-            onDeleteSong={onSongDelete}
-            searchQuery={searchQuery}
-          />
-        </div>
+            {showProcessingSection && (
+              <ConvertingSection
+                processingSongs={processingSongs}
+                onRetrySong={onSongRetry}
+                onDeleteSong={onSongDelete}
+                searchQuery={searchQuery}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <AddSongsModal

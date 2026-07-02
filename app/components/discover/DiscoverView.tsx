@@ -232,6 +232,10 @@ export function DiscoverView({
     })),
     [artistSongs, selectedArtist]
   );
+  const mainContentWrapperClassName = [
+    'main-content-wrapper',
+    processingSongs.length > 0 ? 'main-content-wrapper--has-bottom-panel' : '',
+  ].filter(Boolean).join(' ');
 
   // Convert ArtistSong[] to Song[] for VirtualizedSongList
   const artistSongsAsSongs: Song[] = useMemo(() =>
@@ -336,7 +340,7 @@ export function DiscoverView({
             </button>
           </div>
         </div>
-        <div className="main-content-wrapper">
+        <div className={mainContentWrapperClassName}>
           <div className="songs-container-full">
             <div className="song-list">
               {isSongsLoading ? (
@@ -374,12 +378,14 @@ export function DiscoverView({
               )}
             </div>
           </div>
-          <div className="action-area">
-            <ConvertingSection
-              processingSongs={processingSongs}
-              onRetrySong={() => {}}
-            />
-          </div>
+          {processingSongs.length > 0 && (
+            <div className="action-area">
+              <ConvertingSection
+                processingSongs={processingSongs}
+                onRetrySong={() => {}}
+              />
+            </div>
+          )}
         </div>
       </>
     );
