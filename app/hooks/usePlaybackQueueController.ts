@@ -4,6 +4,7 @@ import {
   getPlaybackState,
   getQueue,
   getSong,
+  primeSongCache,
   popNextSong,
   type QueueItem,
   type Song,
@@ -14,6 +15,7 @@ import { shuffleArray } from '../lib/utils';
 
 interface UsePlaybackQueueControllerParams {
   currentSong: Song | undefined;
+  playSong: (song: Song) => void;
   setCurrentSong: (song: Song | undefined) => void;
   setIsPlaying: (playing: boolean) => void;
   setIsShuffled: (shuffled: boolean) => void;
@@ -28,6 +30,7 @@ interface UsePlaybackQueueControllerParams {
 
 export function usePlaybackQueueController({
   currentSong,
+  playSong,
   setCurrentSong,
   setIsPlaying,
   setIsShuffled,
@@ -46,19 +49,35 @@ export function usePlaybackQueueController({
   const localQueueIndexRef = useRef(-1);
   const onQueueExhaustedRef = useRef<(() => void) | null>(null);
 
+  const prefetchSongsById = useCallback((songIds: string[]) => {
+    const uniqueSongIds = [...new Set(songIds.filter(Boolean))];
+    for (const songId of uniqueSongIds) {
+      void getSong(songId).catch(() => {});
+    }
+  }, []);
+
   const setLocalSongList = useCallback((songs: Song[], currentIndex: number) => {
     localSongListRef.current = songs;
     localQueueIndexRef.current = currentIndex;
-  }, []);
+    primeSongCache(songs);
+
+    const songIdsToPrefetch = songs
+      .filter((_, index) => index !== currentIndex)
+      .slice(0, 3)
+      .map((song) => song.song_id);
+
+    prefetchSongsById(songIdsToPrefetch);
+  }, [prefetchSongsById]);
 
   const loadQueue = useCallback(async () => {
     try {
       const queueItems = await getQueue();
       setQueue(queueItems);
+      prefetchSongsById(queueItems.slice(0, 3).map((item) => item.song_id));
     } catch (err) {
       console.error('Failed to load queue:', err);
     }
-  }, []);
+  }, [prefetchSongsById]);
 
   const loadPlaybackState = useCallback(async () => {
     try {
@@ -118,18 +137,18 @@ export function usePlaybackQueueController({
 
     try {
       const songToPlay = await getSong(nextLocalSong.song_id);
-      setCurrentSong(songToPlay);
+      playSong(songToPlay);
       setCurrentSongAPI(songToPlay.song_id).catch(() => {});
     } catch {
       const fallbackPlaybackUrl = nextLocalSong.stream_url;
       if (fallbackPlaybackUrl) {
-        setCurrentSong({ ...nextLocalSong, stream_url: fallbackPlaybackUrl });
+        playSong({ ...nextLocalSong, stream_url: fallbackPlaybackUrl });
       } else {
         setCurrentSong(undefined);
         setIsPlaying(false);
       }
     }
-  }, [isShuffled, repeatAll, setCurrentSong, setIsPlaying]);
+  }, [isShuffled, playSong, repeatAll, setCurrentSong, setIsPlaying]);
 
   const playNext = useCallback(async () => {
     if (playNextInProgressRef.current) return;
@@ -150,7 +169,7 @@ export function usePlaybackQueueController({
         const nextSong = await popNextSong();
         if (nextSong) {
           const songToPlay = await getSong(nextSong.song_id);
-          setCurrentSong(songToPlay);
+          playSong(songToPlay);
           setCurrentSongAPI(songToPlay.song_id).catch(err =>
             console.error('Failed to set current song on backend:', err)
           );
@@ -163,7 +182,7 @@ export function usePlaybackQueueController({
             const rebuiltNextSong = await popNextSong();
             if (rebuiltNextSong) {
               const songToPlay = await getSong(rebuiltNextSong.song_id);
-              setCurrentSong(songToPlay);
+              playSong(songToPlay);
               setCurrentSongAPI(songToPlay.song_id).catch(err =>
                 console.error('Failed to set current song on backend:', err)
               );
@@ -187,11 +206,11 @@ export function usePlaybackQueueController({
     audioRef,
     currentSong,
     loadQueue,
+    playSong,
     playNextInProgressRef,
     playNextFromLocal,
     rebuildUnofficialQueue,
     repeatOne,
-    setCurrentSong,
   ]);
 
   const playPrevious = useCallback(() => {
@@ -214,12 +233,10 @@ export function usePlaybackQueueController({
       );
     }
 
-    setCurrentSong(previousSong);
+    playSong(previousSong);
     setPlaybackHistory(prev => prev.slice(1));
-    audioRef.current.play().catch(console.error);
-    setIsPlaying(true);
     loadQueue().catch(err => console.error('Failed to reload queue:', err));
-  }, [audioRef, currentSong, loadQueue, playbackHistory, setCurrentSong, setIsPlaying]);
+  }, [audioRef, currentSong, loadQueue, playbackHistory, playSong]);
 
   return {
     queue,

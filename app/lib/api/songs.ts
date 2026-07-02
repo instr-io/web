@@ -2,6 +2,53 @@ import { API_BASE, createHeaders, getAuthToken, getCurrentUserId, requireCurrent
 import type { Song } from './types';
 
 const getSongsPromises = new Map<string, Promise<Song[]>>();
+const getSongPromises = new Map<string, Promise<Song>>();
+const songCache = new Map<string, { song: Song; cachedAt: number }>();
+const SONG_CACHE_TTL_MS = 10 * 60 * 1000;
+
+function cacheSong(song: Song, ...keys: Array<string | undefined>) {
+  const cachedAt = Date.now();
+  const resolvedKeys = new Set<string>();
+
+  for (const key of [song.song_id, song.actual_id, ...keys]) {
+    if (key) {
+      resolvedKeys.add(key);
+    }
+  }
+
+  for (const key of resolvedKeys) {
+    songCache.set(key, { song, cachedAt });
+  }
+}
+
+function getFreshCachedSong(songId: string): Song | null {
+  const cached = songCache.get(songId);
+  if (!cached) {
+    return null;
+  }
+
+  if (Date.now() - cached.cachedAt > SONG_CACHE_TTL_MS) {
+    songCache.delete(songId);
+    return null;
+  }
+
+  if (!cached.song.stream_url) {
+    songCache.delete(songId);
+    return null;
+  }
+
+  return cached.song;
+}
+
+export function primeSongCache(songs: Song[] | Song): void {
+  const list = Array.isArray(songs) ? songs : [songs];
+  for (const song of list) {
+    if (!song.stream_url) {
+      continue;
+    }
+    cacheSong(song);
+  }
+}
 
 export async function getSongs(): Promise<Song[]> {
   const userId = requireCurrentUserId('User ID required to fetch songs');
@@ -21,7 +68,9 @@ export async function getSongs(): Promise<Song[]> {
       }
 
       const data = await response.json();
-      return data.songs || [];
+      const songs = data.songs || [];
+      primeSongCache(songs);
+      return songs;
     } finally {
       getSongsPromises.delete(userId);
     }
@@ -32,17 +81,38 @@ export async function getSongs(): Promise<Song[]> {
 }
 
 export async function getSong(songId: string): Promise<Song> {
-  const headers = await createHeaders();
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  const response = await fetch(`${API_BASE}/song/${songId}`, { headers, cache: 'no-store', signal: controller.signal });
-  clearTimeout(timeout);
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch song');
+  const cachedSong = getFreshCachedSong(songId);
+  if (cachedSong) {
+    return cachedSong;
   }
 
-  return response.json();
+  const existingPromise = getSongPromises.get(songId);
+  if (existingPromise) {
+    return existingPromise;
+  }
+
+  const headers = await createHeaders();
+  const promise = (async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(`${API_BASE}/song/${songId}`, { headers, cache: 'no-store', signal: controller.signal });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch song');
+      }
+
+      const song = await response.json();
+      cacheSong(song, songId);
+      return song;
+    } finally {
+      clearTimeout(timeout);
+      getSongPromises.delete(songId);
+    }
+  })();
+
+  getSongPromises.set(songId, promise);
+  return promise;
 }
 
 export async function replaceSong(

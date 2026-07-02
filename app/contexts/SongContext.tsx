@@ -72,10 +72,14 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [triggerFastPolling, setTriggerFastPolling] = useState(0);
-  const fastPollMax = useRef<number>(20);
+  // Keep fast polling active for longer while songs are processing so the UI
+  // doesn't fall back to minute-long status gaps during typical conversions.
+  const fastPollMax = useRef<number>(120);
   const lastMutationTime = useRef<number>(0);
   const pendingDeletions = useRef<Set<string>>(new Set());
   const pendingDeletionTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const pendingSongOverrides = useRef<Map<string, Partial<Song>>>(new Map());
+  const pendingSongOverrideTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const addPendingDeletions = useCallback((ids: string[]) => {
     for (const id of ids) {
@@ -97,6 +101,39 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
     return songs.filter(s => !pendingDeletions.current.has(s.song_id));
   }, []);
 
+  const setPendingSongOverride = useCallback((songId: string, patch: Partial<Song>, ttlMs = 15000) => {
+    pendingSongOverrides.current.set(songId, patch);
+
+    const existing = pendingSongOverrideTimers.current.get(songId);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(() => {
+      pendingSongOverrides.current.delete(songId);
+      pendingSongOverrideTimers.current.delete(songId);
+    }, ttlMs);
+
+    pendingSongOverrideTimers.current.set(songId, timer);
+  }, []);
+
+  const clearPendingSongOverride = useCallback((songId: string) => {
+    pendingSongOverrides.current.delete(songId);
+
+    const existing = pendingSongOverrideTimers.current.get(songId);
+    if (existing) {
+      clearTimeout(existing);
+      pendingSongOverrideTimers.current.delete(songId);
+    }
+  }, []);
+
+  const applyPendingSongOverrides = useCallback((songs: Song[]) => {
+    if (pendingSongOverrides.current.size === 0) return songs;
+
+    return songs.map((song) => {
+      const patch = pendingSongOverrides.current.get(song.song_id);
+      return patch ? { ...song, ...patch } : song;
+    });
+  }, []);
+
   const setUserSongs = useCallback((value: React.SetStateAction<Song[]>) => {
     setUserSongsState((previousSongs) => {
       const nextSongs = typeof value === 'function'
@@ -115,7 +152,7 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
     });
   }, []);
 
-  const startFastPolling = useCallback((maxPolls: number = 20) => {
+  const startFastPolling = useCallback((maxPolls: number = 120) => {
     fastPollMax.current = maxPolls;
     setTriggerFastPolling(prev => prev + 1);
   }, []);
@@ -129,7 +166,7 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
 
     if (!silent) setIsLoading(true);
     try {
-      const songs = filterPendingDeletions(await getSongs());
+      const songs = applyPendingSongOverrides(filterPendingDeletions(await getSongs()));
       if (getAuthCurrentUserId() !== requestUserId) {
         return [];
       }
@@ -156,7 +193,7 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, [filterPendingDeletions, setUserSongs]);
+  }, [applyPendingSongOverrides, filterPendingDeletions, setUserSongs]);
 
   const loadPlaylist = useCallback(async (playlistId: string, isPublic = false, publicUserId?: string, silent = false): Promise<PlaylistWithSongs> => {
     const requestUserId = !isPublic ? getAuthCurrentUserId() : null;
@@ -178,7 +215,7 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
         return { playlist_id: playlistId, name: '', songs: [] };
       }
       if (playlist.songs) {
-        playlist.songs = filterPendingDeletions(playlist.songs);
+        playlist.songs = applyPendingSongOverrides(filterPendingDeletions(playlist.songs));
       }
       return playlist;
     } catch (error) {
@@ -187,7 +224,7 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, [filterPendingDeletions]);
+  }, [applyPendingSongOverrides, filterPendingDeletions]);
 
   const completeSongs = useMemo(() => {
     const complete = currentViewSongsState.filter(song => song.status === 'COMPLETE');
@@ -215,13 +252,12 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
 
     // Optimistic: update UI immediately, protect from poll flicker
     addPendingDeletions([song.song_id]);
+    clearPendingSongOverride(song.song_id);
     if (currentView === 'user-songs') {
-      const updatedUserSongs = userSongsState.filter(s => s.song_id !== song.song_id);
-      setUserSongs(updatedUserSongs);
-      setCurrentViewSongs(updatedUserSongs);
+      setUserSongs((songs) => songs.filter((s) => s.song_id !== song.song_id));
+      setCurrentViewSongs((songs) => songs.filter((s) => s.song_id !== song.song_id));
     } else {
-      const updatedViewSongs = currentViewSongsState.filter(s => s.song_id !== song.song_id);
-      setCurrentViewSongs(updatedViewSongs);
+      setCurrentViewSongs((songs) => songs.filter((s) => s.song_id !== song.song_id));
     }
 
     try {
@@ -238,23 +274,48 @@ export function SongProvider({ children, currentView }: SongProviderProps) {
       pendingDeletions.current.delete(song.song_id);
       await loadUserSongs();
     }
-  }, [addPendingDeletions, currentView, currentViewSongsState, loadUserSongs, setCurrentViewSongs, setUserSongs, startFastPolling, userSongsState]);
+  }, [addPendingDeletions, clearPendingSongOverride, currentView, loadUserSongs, setCurrentViewSongs, setUserSongs, startFastPolling]);
 
   const handleRetrySong = useCallback(async (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
+    lastMutationTime.current = Date.now();
+
+    const optimisticPatch: Partial<Song> = {
+      status: 'QUEUED',
+      timestamp: Date.now(),
+      is_incorrect: false,
+    };
+
+    setPendingSongOverride(song.song_id, optimisticPatch);
+    setUserSongs((songs) => songs.map((s) => s.song_id === song.song_id ? { ...s, ...optimisticPatch } : s));
+    setCurrentViewSongs((songs) => songs.map((s) => s.song_id === song.song_id ? { ...s, ...optimisticPatch } : s));
+    startFastPolling(12);
 
     try {
       const { addSong } = await import('../lib/api');
       await addSong(`https://www.youtube.com/watch?v=${song.song_id}`, song.title, song.artist);
-
-      setTimeout(async () => {
-        await loadUserSongs();
-        startFastPolling();
-      }, 1000);
+      lastMutationTime.current = Date.now();
+      void loadUserSongs(true);
     } catch (err) {
       console.error('Failed to retry song:', err);
+      clearPendingSongOverride(song.song_id);
+      await loadUserSongs();
     }
-  }, [loadUserSongs, startFastPolling]);
+  }, [clearPendingSongOverride, loadUserSongs, setCurrentViewSongs, setPendingSongOverride, setUserSongs, startFastPolling]);
+
+  useEffect(() => {
+    const deletionTimers = pendingDeletionTimers.current;
+    const overrideTimers = pendingSongOverrideTimers.current;
+
+    return () => {
+      for (const timer of deletionTimers.values()) {
+        clearTimeout(timer);
+      }
+      for (const timer of overrideTimers.values()) {
+        clearTimeout(timer);
+      }
+    };
+  }, []);
 
   const handleAddToQueue = useCallback(async (e: React.MouseEvent, song: Song, loadQueue: () => Promise<void>) => {
     e.stopPropagation();

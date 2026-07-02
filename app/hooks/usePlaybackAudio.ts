@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { recordListen, type Song } from '../lib/api';
+import { primeSongCache, recordListen, type Song } from '../lib/api';
 import { decodeHtmlEntities } from '../lib/utils';
 
 interface UsePlaybackAudioParams {
@@ -31,6 +31,7 @@ export function usePlaybackAudio({
   const loadedSongRef = useRef<string | null>(null);
   const trackedSongRef = useRef<{ song_id: string; artist?: string } | null>(null);
   const isLoadingNewSongRef = useRef(false);
+  const isTransitioningTrackRef = useRef(false);
   const consecutiveErrorsRef = useRef(0);
   const listenStartTimeRef = useRef<number | null>(null);
   const accumulatedListenTimeRef = useRef(0);
@@ -56,9 +57,32 @@ export function usePlaybackAudio({
     });
   }, [getAndResetListenTime]);
 
+  const applyMediaSessionMetadata = useCallback((song: Song, playlistName = '') => {
+    if (!('mediaSession' in navigator)) return;
+
+    const title = decodeHtmlEntities(song.title || 'Unknown Track');
+    const artist = song.artist ? decodeHtmlEntities(song.artist) : 'instrio';
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title,
+      artist,
+      album: playlistName,
+      artwork: [{ src: '/mobile.jpg', sizes: '512x512', type: 'image/jpeg' }],
+    });
+  }, []);
+
+  const beginTrackTransition = useCallback(() => {
+    isTransitioningTrackRef.current = true;
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing';
+    }
+  }, []);
+
   const playSong = useCallback((song: Song) => {
     const playbackUrl = song.stream_url;
     if (!playbackUrl || !audioRef.current) return;
+
+    beginTrackTransition();
 
     if (trackedSongRef.current?.song_id !== song.song_id) {
       flushTrackedListen(trackedSongRef.current);
@@ -70,24 +94,27 @@ export function usePlaybackAudio({
     trackedSongRef.current = { song_id: song.song_id, artist: song.artist };
     loadedSongRef.current = song.song_id;
 
+    primeSongCache(song);
+    applyMediaSessionMetadata(song, currentPlaylistName);
     setCurrentSong(song);
 
     isLoadingNewSongRef.current = true;
     audioRef.current.src = playbackUrl;
     audioRef.current.preload = 'auto';
-    audioRef.current.load();
     audioRef.current.play()
       .then(() => {
         isLoadingNewSongRef.current = false;
+        isTransitioningTrackRef.current = false;
         setIsPlaying(true);
       })
       .catch(error => {
         console.error('Playback failed:', error);
         isLoadingNewSongRef.current = false;
+        isTransitioningTrackRef.current = false;
         setIsPlaying(false);
         loadedSongRef.current = null;
       });
-  }, [audioRef, flushTrackedListen, setCurrentSong, setIsPlaying]);
+  }, [applyMediaSessionMetadata, audioRef, beginTrackTransition, currentPlaylistName, flushTrackedListen, setCurrentSong, setIsPlaying]);
 
   const handleSeek = useCallback((progress: number) => {
     if (audioRef.current && duration) {
@@ -118,14 +145,18 @@ export function usePlaybackAudio({
   }, [audioRef, currentSong]);
 
   const handleAudioPlay = useCallback(() => {
+    isTransitioningTrackRef.current = false;
     listenStartTimeRef.current = Date.now();
     setIsPlaying(true);
 
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('previoustrack', () => { playPreviousRef.current(); });
-      navigator.mediaSession.setActionHandler('nexttrack', () => { playNextRef.current(); });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        beginTrackTransition();
+        void playNextRef.current();
+      });
     }
-  }, [playNextRef, playPreviousRef, setIsPlaying]);
+  }, [beginTrackTransition, playNextRef, playPreviousRef, setIsPlaying]);
 
   const handleAudioPause = useCallback(() => {
     if (listenStartTimeRef.current !== null) {
@@ -133,7 +164,7 @@ export function usePlaybackAudio({
       listenStartTimeRef.current = null;
     }
 
-    if (isLoadingNewSongRef.current) return;
+    if (isLoadingNewSongRef.current || isTransitioningTrackRef.current) return;
     setIsPlaying(false);
   }, [setIsPlaying]);
 
@@ -142,6 +173,7 @@ export function usePlaybackAudio({
       flushTrackedListen(trackedSongRef.current);
       trackedSongRef.current = null;
       loadedSongRef.current = null;
+      isTransitioningTrackRef.current = false;
       return;
     }
 
@@ -162,33 +194,26 @@ export function usePlaybackAudio({
     listenStartTimeRef.current = null;
     accumulatedListenTimeRef.current = 0;
 
-    if ('mediaSession' in navigator) {
-      const title = decodeHtmlEntities(currentSong.title || 'Unknown Track');
-      const artist = currentSong.artist ? decodeHtmlEntities(currentSong.artist) : 'instrio';
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title,
-        artist,
-        album: '',
-        artwork: [{ src: '/mobile.jpg', sizes: '512x512', type: 'image/jpeg' }],
-      });
-    }
+    applyMediaSessionMetadata(currentSong, currentPlaylistName);
+    beginTrackTransition();
 
     isLoadingNewSongRef.current = true;
     audioRef.current.src = playbackUrl;
     audioRef.current.preload = 'auto';
-    audioRef.current.load();
     audioRef.current.play()
       .then(() => {
         isLoadingNewSongRef.current = false;
+        isTransitioningTrackRef.current = false;
         setIsPlaying(true);
       })
       .catch(error => {
         console.error('Playback failed:', error);
         isLoadingNewSongRef.current = false;
+        isTransitioningTrackRef.current = false;
         setIsPlaying(false);
         loadedSongRef.current = null;
       });
-  }, [audioRef, currentSong, flushTrackedListen, setIsPlaying]);
+  }, [applyMediaSessionMetadata, audioRef, beginTrackTransition, currentPlaylistName, currentSong, flushTrackedListen, setIsPlaying]);
 
   useEffect(() => {
     const handlePageHide = () => {
@@ -224,7 +249,8 @@ export function usePlaybackAudio({
       playPreviousRef.current();
     });
     navigator.mediaSession.setActionHandler('nexttrack', () => {
-      playNextRef.current();
+      beginTrackTransition();
+      void playNextRef.current();
     });
 
     return () => {
@@ -233,31 +259,12 @@ export function usePlaybackAudio({
       navigator.mediaSession.setActionHandler('previoustrack', null);
       navigator.mediaSession.setActionHandler('nexttrack', null);
     };
-  }, [audioRef, playNextRef, playPreviousRef, setIsPlaying]);
+  }, [audioRef, beginTrackTransition, playNextRef, playPreviousRef, setIsPlaying]);
 
   useEffect(() => {
-    if (!('mediaSession' in navigator) || !currentSong) return;
-
-    const existing = navigator.mediaSession.metadata;
-    const title = decodeHtmlEntities(currentSong.title || 'Unknown Track');
-    const artist = currentSong.artist ? decodeHtmlEntities(currentSong.artist) : 'instrio';
-    const album = currentPlaylistName || '';
-
-    if (existing) {
-      existing.title = title;
-      existing.artist = artist;
-      existing.album = album;
-    } else {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title,
-        artist,
-        album,
-        artwork: [
-          { src: '/mobile.jpg', sizes: '512x512', type: 'image/jpeg' },
-        ],
-      });
-    }
-  }, [currentPlaylistName, currentSong]);
+    if (!currentSong) return;
+    applyMediaSessionMetadata(currentSong, currentPlaylistName);
+  }, [applyMediaSessionMetadata, currentPlaylistName, currentSong]);
 
   useEffect(() => {
     if ('mediaSession' in navigator) {
@@ -280,6 +287,11 @@ export function usePlaybackAudio({
     playNextRef.current();
   }, [playNextInProgressRef, playNextRef, setIsPlaying]);
 
+  const handleAudioEnded = useCallback(() => {
+    beginTrackTransition();
+    void playNextRef.current();
+  }, [beginTrackTransition, playNextRef]);
+
   return {
     currentTime,
     setCurrentTime,
@@ -291,6 +303,7 @@ export function usePlaybackAudio({
     handleLoadedMetadata,
     handleAudioPlay,
     handleAudioPause,
+    handleAudioEnded,
     handleAudioError,
     getAndResetListenTime,
   };

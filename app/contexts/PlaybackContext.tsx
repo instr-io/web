@@ -75,6 +75,7 @@ export function PlaybackProvider({ children, currentPlaylistName = '' }: Playbac
   });
   const queueController = usePlaybackQueueController({
     currentSong,
+    playSong: audio.playSong,
     setCurrentSong,
     setIsPlaying,
     setIsShuffled,
@@ -112,6 +113,7 @@ export function PlaybackProvider({ children, currentPlaylistName = '' }: Playbac
     handleLoadedMetadata,
     handleAudioPlay,
     handleAudioPause,
+    handleAudioEnded,
     handleAudioError,
     getAndResetListenTime,
   } = audio;
@@ -146,7 +148,7 @@ export function PlaybackProvider({ children, currentPlaylistName = '' }: Playbac
       {children}
       <audio
         ref={audioRef}
-        onEnded={playNext}
+        onEnded={handleAudioEnded}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onPlay={handleAudioPlay}
